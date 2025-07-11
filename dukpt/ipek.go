@@ -2,15 +2,11 @@ package dukpt
 
 import (
 	"crypto/des"
-	"fmt"
 )
 
 var (
 	// bdkMaskForIPEK as defined in ANSI X9.24-1:2017 (DUKPT) section 7.2.2.2.
 	bdkMaskForIPEK = []byte{0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0x00, 0x00, 0x00, 0x00}
-
-	// ksnMaskForIPEK as defined in ANSI X9.24-1:2017 (DUKPT) section 7.2.2.2.
-	ksnMaskForIPEK = []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0b11100000}
 )
 
 // deriveIPEK derives the Initial PIN Encryption Key (IPEK) from the BDK and KSN.
@@ -23,82 +19,72 @@ var (
 // Then, the IPEK is derived as follows:
 // - The left half is derived by encrypting the masked KSN with the *original* BDK.
 // - The right half is derived by encrypting the masked KSN with a *masked* BDK.
-func deriveIPEK(bdk, ksn []byte) ([]byte, error) {
-	ksnMasked, err := maskKSNForIPEK(ksn)
-	if err != nil {
-		return nil, err
-	}
-
-	// data for the right half of the IPEK is derived from the BDK masked with the BDK mask
-	bdkMasked, err := maskBDKForIPEK(bdk)
-	if err != nil {
-		return nil, err
-	}
+func deriveIPEK(bdk Key, ksn KSN) (Key, error) {
+	ksnMasked := maskKSNForIPEK(ksn)
 
 	left, err := encryptIPEKHalfWith3DES(bdk, ksnMasked)
 	if err != nil {
-		return nil, err
+		return Key{}, err
 	}
 
+	bdkMasked := maskBDKForIPEK(bdk)
 	right, err := encryptIPEKHalfWith3DES(bdkMasked, ksnMasked)
 	if err != nil {
-		return nil, err
+		return Key{}, err
 	}
 
-	ipek := make([]byte, lenIPEK)
-	copy(ipek[:lenIPEK/2], left)
-	copy(ipek[lenIPEK/2:], right)
+	var ipek Key
+	copy(ipek[:lenKeyHalf], left[:])
+	copy(ipek[lenKeyHalf:], right[:])
 
 	return ipek, nil
 }
 
-func encryptIPEKHalfWith3DES(key []byte, data []byte) ([]byte, error) {
-	if len(data) != 8 {
-		return nil, fmt.Errorf("each IPEK half must be exactly 8 bytes, got %d bytes", len(data))
-	}
+// encryptIPEKHalfWith3DES encrypts a half of the IPEK using 3DES with the provided key.
+// The key is a BDK or a masked BDK, and the data is the masked KSN.
+func encryptIPEKHalfWith3DES(key Key, data KeyHalf) (KeyHalf, error) {
+	normalizedKey := normalizeKey(key)
 
-	normalizedKey, err := normalizeKey(key)
+	block, err := des.NewTripleDESCipher(normalizedKey[:])
 	if err != nil {
-		return nil, err
+		return KeyHalf{}, err
 	}
 
-	block, err := des.NewTripleDESCipher(normalizedKey)
-	if err != nil {
-		return nil, err
-	}
-
-	encrypted := make([]byte, 8)
-	block.Encrypt(encrypted, data)
+	var encrypted KeyHalf
+	block.Encrypt(encrypted[:], data[:])
 
 	return encrypted, nil
 }
 
+// normalizeKey ensures a 16-byte key is expanded to 24 bytes for 3DES (K1|K2|K1).
+// The first 16 bytes are copied, and the next 8 bytes are filled with the first 8 bytes.
+func normalizeKey(key Key) TripleDESKey {
+	var normalized TripleDESKey
+
+	copy(normalized[:], key[:])
+	copy(normalized[lenKey:], key[:lenKeyHalf])
+
+	return normalized
+}
+
 // maskBDKForIPEK applies the mask defined in ANSI X9.24-1:2017 (DUKPT) section 7.2.2.2 to the BDK for IPEK derivation.
 // The mask 0xC0C0C0C000000000C0C0C0C000000000 is used to generate the right half of the IPEK by XORing with the BDK.
-func maskBDKForIPEK(bdk []byte) ([]byte, error) {
-	if len(bdk) != lenBDK {
-		return nil, fmt.Errorf("invalid BDK length: expected %d bytes but got %d bytes", lenBDK, len(bdk))
-	}
+func maskBDKForIPEK(bdk Key) Key {
+	var masked Key
 
-	masked := make([]byte, lenBDK)
-	for i := 0; i < lenBDK; i++ {
+	for i := range lenKey {
 		masked[i] = bdk[i] ^ bdkMaskForIPEK[i]
 	}
 
-	return masked, nil
+	return masked
 }
 
 // maskKSNForIPEK implements KSN masking as defined in ANSI X9.24-1:2017 (DUKPT) for IPEK derivation.
-// The first 8 bytes of the KSN are used, and the last byte is masked to clear the last 5 bits.
-func maskKSNForIPEK(ksn []byte) ([]byte, error) {
-	if len(ksn) != lenKSN {
-		return nil, fmt.Errorf("invalid KSN length: expected %d bytes but got %d bytes", lenKSN, len(ksn))
-	}
-
-	masked := make([]byte, lenMaskedKSN)
-	for i := 0; i < lenMaskedKSN; i++ {
-		masked[i] = ksn[i] & ksnMaskForIPEK[i]
-	}
-
-	return masked, nil
+// The first 8 bytes of the KSN are used, and the last byte is masked to clear the last 5 bits,
+// leaving 7 * 8 + 3 bits of data (59 bits).
+//
+// This is the same as truncating the KSI to the first 8 bytes.
+func maskKSNForIPEK(ksn KSN) KeyHalf {
+	ksi := extractKSI(ksn)
+	return KeyHalf(ksi[:lenMaskedKSN])
 }

@@ -1,0 +1,35 @@
+package dukpt
+
+var (
+	// keyMaskDataVariant is the XOR mask used during session key derivation to encrypt data (i.e. track2 data).
+	keyMaskDataVariant = Key{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00,
+	}
+
+	// keyMaskPinVariant is the XOR mask used during session key derivation to encrypt the PIN.
+	keyMaskPinVariant = Key{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+	}
+
+	// keyMaskMacVariant is the XOR mask used during session key derivation to compute the MAC.
+	keyMaskMacVariant = Key{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+	}
+)
+
+func maskSessionKeyForData(key Key) Key {
+	return maskSessionKey(key, keyMaskDataVariant)
+}
+
+func maskSessionKey(key, mask Key) Key {
+	var masked Key
+
+	for i := range lenKey {
+		masked[i] = key[i] ^ mask[i]
+	}
+
+	return masked
+}
