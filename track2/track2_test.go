@@ -45,10 +45,10 @@ func TestData_FormatISO_PANPadding(t *testing.T) {
 			require.NoError(t, err)
 
 			resultHex := strings.ToUpper(hex.EncodeToString(result))
-			
+
 			// The result should start with 3B (start sentinel), followed by the PAN portion
 			expectedStart := "3B" + strings.ToUpper(tt.expPANInHex)
-			
+
 			require.True(t, strings.HasPrefix(resultHex, expectedStart))
 
 			// Verify the PAN portion specifically
@@ -73,9 +73,9 @@ func TestData_FormatAlt_PANPadding(t *testing.T) {
 	require.NoError(t, err)
 
 	resultHex := strings.ToUpper(hex.EncodeToString(result))
-	
+
 	// Should start with 3B (start sentinel) + PAN with F padding
 	expectedStart := "3B123412341234123F"
-	
+
 	require.True(t, strings.HasPrefix(resultHex, expectedStart))
 }

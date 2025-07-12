@@ -56,7 +56,7 @@ func TestPANToBCD(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := PANToBCD(tt.pan)
-			
+
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
@@ -67,7 +67,6 @@ func TestPANToBCD(t *testing.T) {
 		})
 	}
 }
-
 
 // Test that regular BCD encoding still works as before (prepends 0 for odd lengths)
 func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
@@ -92,7 +91,7 @@ func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := StringToBCD(tt.input)
 			require.NoError(t, err)
-			
+
 			resultHex := strings.ToUpper(hex.EncodeToString(result))
 			require.Equal(t, strings.ToUpper(tt.expected), resultHex)
 		})
