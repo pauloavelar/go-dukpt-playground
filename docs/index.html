@@ -7,7 +7,19 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script>
-        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Mermaid is loaded
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+            } else {
+                console.warn('Mermaid.js failed to load from CDN. Diagrams will show as text.');
+                // Add a notice to the page
+                const notice = document.createElement('div');
+                notice.style.cssText = 'background: #fef3cd; border: 1px solid #ffeaa7; padding: 1rem; margin: 1rem; border-radius: 4px; color: #856404;';
+                notice.innerHTML = '<strong>Note:</strong> This page uses Mermaid.js from an external CDN for diagram rendering. If diagrams appear as text, please ensure external resources can be loaded.';
+                document.body.insertBefore(notice, document.body.firstChild);
+            }
+        });
     </script>
 </head>
 <body>

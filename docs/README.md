@@ -1,52 +1,79 @@
-# DUKPT Documentation
+# DUKPT Workflow Documentation
 
-This directory contains the GitHub Pages documentation for the DUKPT Playground project.
+This directory contains the GitHub Pages documentation for the DUKPT (Derived Unique Key Per Transaction) workflow implementation.
 
-## Setup
+## Overview
 
-This documentation is designed to be served via GitHub Pages. To enable it:
+The documentation provides a comprehensive guide to understanding DUKPT key management in payment processing systems, featuring:
 
-1. Go to your repository's Settings → Pages
-2. Set the source to "Deploy from a branch"
-3. Select `main` branch and `/docs` folder
-4. The documentation will be available at `https://[username].github.io/[repository-name]/`
-
-## Structure
-
-- `index.html` - Main documentation page with complete DUKPT workflow
-- `assets/css/style.css` - Clean, responsive styling
-- Text-based ASCII diagrams for compatibility and clarity
+- Complete workflow explanations
+- Interactive Mermaid.js diagrams
+- Real code examples from the Go implementation
+- Professional, responsive design
 
 ## Features
 
-- **Complete DUKPT Documentation**: Covers the entire workflow from BDK to encrypted data
-- **Interactive Navigation**: Smooth scrolling between sections
-- **Text-based Diagrams**: ASCII art diagrams that work without external dependencies
-- **Responsive Design**: Works on desktop and mobile devices
-- **Clean Styling**: Professional appearance following community standards
-- **Real Examples**: Includes actual examples from the Go implementation
+### Modern Diagrams
+The documentation uses **Mermaid.js diagrams** loaded from an external CDN for professional visualization:
+- Sequence diagrams for transaction flows
+- Flowcharts for key derivation processes
+- Clean, modern styling with neutral theme
 
-## Diagram Options
+### Comprehensive Coverage
+- DUKPT Overview and Security Benefits
+- Complete Transaction Flow
+- IPEK Derivation Process  
+- Session Key Derivation (NRKGP)
+- Data Encryption Process
+- Practical Examples
 
-The documentation uses ASCII art diagrams for maximum compatibility and to meet the requirement for text-based diagrams. This approach:
+## Setup for GitHub Pages
 
-- Works without external CDN dependencies
-- Loads instantly on GitHub Pages
-- Is accessible and printer-friendly
-- Follows the "text-based as much as possible" requirement
+To enable GitHub Pages for this documentation:
 
-Alternative diagram options that could be integrated in the future:
-- **Mermaid.js**: For more complex sequence diagrams (requires CDN)
-- **PlantUML**: Would need server-side rendering or JavaScript library
-- **SVG**: For custom graphics (would need to be created manually)
+1. Go to repository **Settings → Pages**
+2. Set source to **"Deploy from a branch"**
+3. Select `main` branch and `/docs` folder
+4. Documentation will be available at `https://pauloavelar.github.io/go-dukpt-playground/`
 
-## Content Overview
+## Technical Details
 
-1. **DUKPT Overview**: Introduction and key concepts
-2. **Complete Workflow**: Full transaction flow diagram
-3. **IPEK Derivation**: Detailed process with step-by-step explanation
-4. **Session Key Derivation**: NRKGP algorithm and implementation
-5. **Data Encryption**: Track2 formatting and encryption process
-6. **Practical Examples**: Real code examples and test data
+### Dependencies
+- **Mermaid.js v10.6.1**: External CDN for diagram rendering
+- **No build process required**: Self-contained HTML/CSS
+- **Responsive design**: Works on desktop and mobile
 
-The documentation is designed to be educational and comprehensive while maintaining clean, professional styling.
+### File Structure
+```
+docs/
+├── index.html          # Main documentation
+├── assets/
+│   └── css/
+│       └── style.css   # Custom styling
+└── README.md          # This file
+```
+
+### Browser Compatibility
+The documentation works in all modern browsers that support:
+- ES6 JavaScript features
+- CSS Grid and Flexbox
+- External script loading
+
+### CDN Usage
+As requested, the documentation uses Mermaid.js from an external CDN:
+```html
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+```
+
+If the CDN is unavailable, diagrams will display as readable text with a notice to users.
+
+## Content
+
+The documentation covers the complete DUKPT workflow with detailed explanations of:
+
+1. **Key Components**: BDK, KSN, IPEK, Session Keys
+2. **Security Benefits**: Unique keys per transaction, non-reversible process
+3. **Implementation Details**: Step-by-step algorithm explanations
+4. **Real Examples**: Actual test data and results
+
+All technical information is backed by the actual Go implementation in this repository.
