@@ -2,21 +2,16 @@ package dukpt
 
 import (
 	"crypto/des"
-	"encoding/hex"
 	"fmt"
 )
 
 // EncryptTrack2 encrypts formatted track2 data using DUKPT and returns the encrypted data.
 //
 // Parameters:
-//   - formatted: The formatted track2 data (numeric only)
-//   - bdk: The Base Derivation Key (16 bytes)
-//   - ksn: The Key Serial Number (10 bytes)
-//
-// Returns:
-//   - encrypted data ([]byte)
-//   - error if encryption fails
-func EncryptTrack2(formatted string, bdk, ksn []byte) ([]byte, error) {
+//   - data: the formatted track2 data
+//   - bdk: the Base Derivation Key (16 bytes)
+//   - ksn: the Key Serial Number (10 bytes)
+func EncryptTrack2(data, bdk, ksn []byte) ([]byte, error) {
 	if len(bdk) != lenKey {
 		return nil, fmt.Errorf("BDK must be %d bytes long", lenKey)
 	}
@@ -27,40 +22,47 @@ func EncryptTrack2(formatted string, bdk, ksn []byte) ([]byte, error) {
 
 	ipek, err := deriveIPEK(Key(bdk), KSN(ksn))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error deriving IPEK - %w", err)
 	}
 
 	sessionKey, err := deriveSessionKey(ipek, KSN(ksn))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error deriving session key - %w", err)
 	}
 
 	sessionKey = maskSessionKeyForData(sessionKey)
+	normalizedSessionKey := normalizeKey(sessionKey)
 
-	// encrypt track2 data (3DES ECB, pad to 16 bytes)
-	data, err := hex.DecodeString(formatted)
+	block, err := des.NewTripleDESCipher(normalizedSessionKey[:])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating 3DES cipher - %w", err)
 	}
 
-	if len(data)%8 != 0 {
-		pad := 8 - (len(data) % 8)
-		for i := 0; i < pad; i++ {
-			data = append(data, 0x00)
-		}
-	}
-
-	block, err := des.NewTripleDESCipher(sessionKey[:])
-	if err != nil {
-		return nil, err
-	}
+	data = padDataForDES(data)
 
 	encrypted := make([]byte, len(data))
-	for bs, be := 0, 8; bs < len(data); bs, be = bs+8, be+8 {
+	for bs, be := 0, lenDesData; be <= len(data); bs, be = bs+lenDesData, be+lenDesData {
 		block.Encrypt(encrypted[bs:be], data[bs:be])
 	}
 
 	return encrypted, nil
+}
+
+// padDataForDES pads the data to a multiple of 8 bytes (the block size for DES).
+func padDataForDES(data []byte) []byte {
+	padded := make([]byte, 0, len(data))
+	padded = append(padded, data...)
+
+	remainder := len(padded) % lenDesData
+	if remainder != 0 {
+		paddingLength := lenDesData - remainder
+
+		for range paddingLength {
+			data = append(data, 0x00) // right padding with zeroes
+		}
+	}
+
+	return padded
 }
 
 // deriveSessionKey derives the session key from the IPEK and KSN according to the DUKPT specification.
@@ -82,7 +84,7 @@ func deriveSessionKey(ipek Key, ksn KSN) (Key, error) {
 			var err error
 			sessionKey, err = dukptNRKGP(sessionKey, KeyHalf(ksnReg[lenKSN-lenKeyHalf:]))
 			if err != nil {
-				return Key{}, err
+				return Key{}, fmt.Errorf("error executing NRKGP - %w", err)
 			}
 		}
 	}
@@ -93,16 +95,17 @@ func deriveSessionKey(ipek Key, ksn KSN) (Key, error) {
 // dukptNRKGP implements the DUKPT Non-Reversible Key Generation Process (NRKGP).
 // It takes a 16-byte key and the last 8 bytes of a KSN register, and returns the derived key.
 func dukptNRKGP(key Key, ksnReg KeyHalf) (Key, error) {
-	keyL, keyR := splitKey(key)
+	maskedKey := maskKeyForNRKGP(key)
+	keyL, keyR := splitKey(maskedKey)
 
 	encL, err := encryptWithDES(keyL, ksnReg)
 	if err != nil {
-		return Key{}, err
+		return Key{}, fmt.Errorf("error encrypting left half - %w", err)
 	}
 
 	encR, err := encryptWithDES(keyR, ksnReg)
 	if err != nil {
-		return Key{}, err
+		return Key{}, fmt.Errorf("error encrypting right half - %w", err)
 	}
 
 	var derived Key
@@ -112,17 +115,23 @@ func dukptNRKGP(key Key, ksnReg KeyHalf) (Key, error) {
 	return derived, nil
 }
 
+// maskKeyForNRKGP applies the DUKPT masking to the key used in the NRKGP process.
+func maskKeyForNRKGP(key Key) Key {
+	var masked Key
+
+	for i := range lenKey {
+		masked[i] = key[i] ^ 0xC0
+	}
+
+	return masked
+}
+
 // encryptWithDES encrypts the provided data using DES with the given key.
 // It applies a mask to the key before encryption, as specified in the DUKPT standard.
 func encryptWithDES(desKey KeyHalf, data KeyHalf) (KeyHalf, error) {
-	var maskedKey KeyHalf
-	for i := range lenKeyHalf {
-		maskedKey[i] = desKey[i] ^ 0xC0
-	}
-
-	blockL, err := des.NewCipher(maskedKey[:])
+	blockL, err := des.NewCipher(desKey[:])
 	if err != nil {
-		return KeyHalf{}, err
+		return KeyHalf{}, fmt.Errorf("error creating DES cipher - %w", err)
 	}
 
 	var enc KeyHalf

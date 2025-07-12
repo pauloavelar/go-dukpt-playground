@@ -5,6 +5,9 @@
 package dukpt
 
 const (
+	// lenDesData is the length of data blocks used in DES encryption.
+	lenDesData = 8
+
 	// lenKey is the length of any key used in DUKPT, such as BDK, IPEK or session keys.
 	lenKey = 16
 
