@@ -32,7 +32,7 @@ func (d *Data) FormatAlt() ([]byte, error) {
 }
 
 func (d *Data) formatTrack2(sep rune) ([]byte, error) {
-	pan, err := bcd.StringToBCD(d.PAN)
+	pan, err := bcd.PANToBCD(d.PAN)
 	if err != nil {
 		return nil, err
 	}
