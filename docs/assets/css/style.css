@@ -159,6 +159,22 @@ li {
 }
 
 .mermaid {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 0;
+}
+
+.diagram-caption {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: left;
+}
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 

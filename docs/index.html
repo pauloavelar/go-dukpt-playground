@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DUKPT Workflow Documentation</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
 </head>
 <body>
     <header>
@@ -54,51 +58,32 @@
             <p>The following diagram shows the complete DUKPT transaction workflow:</p>
             
             <div class="diagram">
-                <pre class="ascii-diagram">
-┌─────────────────────────────────────────────────────────────────────┐
-│                         DUKPT Transaction Flow                      │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌──────────┐           ┌──────────┐           ┌─────────────────┐
-│ Terminal │           │   Card   │           │ Key Management  │
-│          │           │          │           │      (HSM)      │
-└────┬─────┘           └────┬─────┘           └────┬────────────┘
-     │                      │                      │
-     │ Request Track Data   │                      │
-     │─────────────────────▶│                      │
-     │                      │                      │
-     │ Track2 Data (PAN, Exp, etc.)                │
-     │◀─────────────────────│                      │
-     │                      │                      │
-┌────┴─────────────────────────────────────────────┴────────────────┐
-│ Terminal derives encryption keys locally:                          │
-│ 1. Derive IPEK from BDK + KSN                                    │
-│ 2. Extract transaction counter from KSN                          │
-│ 3. Derive Session Key using NRKGP                               │
-│ 4. Apply data variant mask                                       │
-│ 5. Encrypt Track2 with 3DES                                     │
-└────┬─────────────────────────────────────────────┬────────────────┘
-     │                      │                      │
-     │      Send Encrypted Data + KSN              │
-     │─────────────────────────────────────────────▶│
-     │                      │                      │
-     │                      │     ┌────────────────┴────────────────┐
-     │                      │     │ HSM recreates same keys:        │
-     │                      │     │ 1. Derive IPEK from BDK + KSN  │
-     │                      │     │ 2. Derive same Session Key     │
-     │                      │     │ 3. Decrypt Track2 data         │
-     │                      │     └────────────────┬────────────────┘
-     │                      │                      │
-     │      Transaction Authorization              │
-     │◀─────────────────────────────────────────────│
-     │                      │                      │
-
-Key Security Properties:
-• Each transaction uses a unique session key
-• Keys cannot be reverse-engineered from encrypted data
-• Non-reversible key generation process (NRKGP)
-• Limited key exposure if device is compromised
-                </pre>
+                <div class="mermaid">
+sequenceDiagram
+    participant T as Terminal
+    participant C as Card
+    participant H as Key Management (HSM)
+    
+    T->>C: Request Track Data
+    C->>T: Track2 Data (PAN, Exp, etc.)
+    
+    Note over T: Terminal derives encryption keys locally:<br/>1. Derive IPEK from BDK + KSN<br/>2. Extract transaction counter from KSN<br/>3. Derive Session Key using NRKGP<br/>4. Apply data variant mask<br/>5. Encrypt Track2 with 3DES
+    
+    T->>H: Send Encrypted Data + KSN
+    
+    Note over H: HSM recreates same keys:<br/>1. Derive IPEK from BDK + KSN<br/>2. Derive same Session Key<br/>3. Decrypt Track2 data
+    
+    H->>T: Transaction Authorization
+                </div>
+                <div class="diagram-caption">
+                    <strong>Key Security Properties:</strong>
+                    <ul>
+                        <li>Each transaction uses a unique session key</li>
+                        <li>Keys cannot be reverse-engineered from encrypted data</li>
+                        <li>Non-reversible key generation process (NRKGP)</li>
+                        <li>Limited key exposure if device is compromised</li>
+                    </ul>
+                </div>
             </div>
         </section>
 
@@ -110,55 +95,34 @@ Key Security Properties:
             </p>
 
             <div class="diagram">
-                <pre class="ascii-diagram">
-┌─────────────────────────────────────────────────────────────────────┐
-│                        IPEK Derivation Process                     │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────┐          ┌─────────────────────┐
-│        BDK          │          │        KSN          │
-│  Base Derivation    │          │   Key Serial        │
-│      Key            │          │     Number          │
-│     16 bytes        │          │     10 bytes        │
-└─────────┬───────────┘          └─────────┬───────────┘
-          │                                │
-          │                                │
-          ▼                                ▼
-┌─────────────────────┐          ┌─────────────────────┐
-│    Mask BDK with    │          │    Mask KSN for    │
-│  0xC0C0C0C0...C0    │          │       IPEK         │
-│                     │          │  (first 8 bytes,   │
-│                     │          │ clear last 5 bits) │
-└─────────┬───────────┘          └─────────┬───────────┘
-          │                                │
-          │ Masked BDK                     │ Masked KSN
-          │                                │
-          └─────────┬──────────────────────┘
-                    │
-                    ▼
-      ┌─────────────────────────────────────┐
-      │         3DES Encryption             │
-      │                                     │
-      │  Left Half:  Encrypt Masked KSN     │
-      │              with original BDK      │
-      │                                     │
-      │  Right Half: Encrypt Masked KSN     │
-      │              with masked BDK        │
-      └─────────────────┬───────────────────┘
-                        │
-                        ▼
-      ┌─────────────────────────────────────┐
-      │              IPEK                   │
-      │   Initial PIN Encryption Key        │
-      │         Left || Right               │
-      │           16 bytes                  │
-      └─────────────────────────────────────┘
-
-Mathematical Representation:
-  IPEK_Left  = 3DES_Encrypt(Masked_KSN, BDK)
-  IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)
-  IPEK       = IPEK_Left || IPEK_Right
-                </pre>
+                <div class="mermaid">
+flowchart TD
+    BDK[BDK<br/>Base Derivation Key<br/>16 bytes]
+    KSN[KSN<br/>Key Serial Number<br/>10 bytes]
+    
+    BDK --> MaskBDK[Mask BDK with<br/>0xC0C0C0C0...C0]
+    KSN --> MaskKSN[Mask KSN for IPEK<br/>first 8 bytes,<br/>clear last 5 bits]
+    
+    MaskBDK --> MBDK[Masked BDK]
+    MaskKSN --> MKSN[Masked KSN]
+    
+    BDK --> LeftEnc[3DES Encrypt<br/>Masked KSN with<br/>original BDK]
+    MBDK --> RightEnc[3DES Encrypt<br/>Masked KSN with<br/>masked BDK]
+    MKSN --> LeftEnc
+    MKSN --> RightEnc
+    
+    LeftEnc --> IPEKLeft[IPEK Left Half]
+    RightEnc --> IPEKRight[IPEK Right Half]
+    
+    IPEKLeft --> IPEK[IPEK<br/>Initial PIN Encryption Key<br/>Left || Right<br/>16 bytes]
+    IPEKRight --> IPEK
+                </div>
+                <div class="diagram-caption">
+                    <strong>Mathematical Representation:</strong><br/>
+                    IPEK_Left = 3DES_Encrypt(Masked_KSN, BDK)<br/>
+                    IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)<br/>
+                    IPEK = IPEK_Left || IPEK_Right
+                </div>
             </div>
 
             <h3>Implementation Details</h3>
@@ -180,66 +144,40 @@ Mathematical Representation:
             </p>
 
             <div class="diagram">
-                <pre class="ascii-diagram">
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Session Key Derivation (NRKGP)                  │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────┐          ┌─────────────────────┐
-│        IPEK         │          │        KSN          │
-│   (from previous    │          │   Key Serial        │
-│      step)          │          │     Number          │
-│     16 bytes        │          │     10 bytes        │
-└─────────┬───────────┘          └─────────┬───────────┘
-          │                                │
-          │                                │
-          ▼                                ▼
-┌─────────────────────┐          ┌─────────────────────┐
-│   Session Key       │          │   Extract from KSN: │
-│   = IPEK            │          │  • KSI (Key Set ID) │
-│   (initially)       │          │  • Counter (21 bits)│
-└─────────┬───────────┘          └─────────┬───────────┘
-          │                                │
-          │                                │
-          └────────────┬───────────────────┘
-                       │
-                       ▼
-        ┌──────────────────────────────────┐
-        │     For each bit set in counter: │
-        │                                  │
-        │  1. Build KSN register with      │
-        │     single bit set               │
-        │                                  │
-        │  2. Apply NRKGP:                 │
-        │     • Mask key with 0xC0         │
-        │     • Split into L/R halves      │
-        │     • DES encrypt each half      │
-        │     • Combine encrypted halves   │
-        │                                  │
-        │  3. Update session key           │
-        └──────────────┬───────────────────┘
-                       │
-                       ▼
-        ┌──────────────────────────────────┐
-        │        Apply Data Mask          │
-        │   0x0000000000FF00000...FF0000   │
-        └──────────────┬───────────────────┘
-                       │
-                       ▼
-        ┌──────────────────────────────────┐
-        │        Final Session Key        │
-        │      Ready for encryption       │
-        │           16 bytes              │
-        └─────────────────────────────────┘
-
-NRKGP Algorithm Details:
-  For bit_position in transaction_counter:
-    if bit is set:
-      ksn_reg = build_ksn_register(ksi, bit_position)
-      session_key = nrkgp(session_key, ksn_reg)
-  
-  session_key = apply_data_mask(session_key)
-                </pre>
+                <div class="mermaid">
+flowchart TD
+    IPEK[IPEK<br/>from previous step<br/>16 bytes]
+    KSN[KSN<br/>Key Serial Number<br/>10 bytes]
+    
+    IPEK --> StartKey[Session Key = IPEK<br/>initially]
+    KSN --> ExtractKSN[Extract from KSN:<br/>• KSI Key Set ID<br/>• Counter 21 bits]
+    
+    ExtractKSN --> CheckBits[For each bit set in counter]
+    
+    CheckBits --> BitSet{Bit Set?}
+    BitSet -->|Yes| BuildKSN[Build KSN register<br/>with single bit set]
+    BitSet -->|No| NextBit[Check next bit]
+    
+    BuildKSN --> NRKGP[Apply NRKGP:<br/>1. Mask key with 0xC0<br/>2. Split into L/R halves<br/>3. DES encrypt each half<br/>4. Combine encrypted halves]
+    
+    NRKGP --> UpdateKey[Update session key]
+    UpdateKey --> NextBit
+    
+    NextBit --> MoreBits{More bits?}
+    MoreBits -->|Yes| CheckBits
+    MoreBits -->|No| ApplyMask[Apply Data Mask<br/>0x0000000000FF00000...FF0000]
+    
+    ApplyMask --> FinalKey[Final Session Key<br/>Ready for encryption<br/>16 bytes]
+                </div>
+                <div class="diagram-caption">
+                    <strong>NRKGP Algorithm Details:</strong><br/>
+                    For bit_position in transaction_counter:<br/>
+                    &nbsp;&nbsp;if bit is set:<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;ksn_reg = build_ksn_register(ksi, bit_position)<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;session_key = nrkgp(session_key, ksn_reg)<br/>
+                    <br/>
+                    session_key = apply_data_mask(session_key)
+                </div>
             </div>
 
             <h3>NRKGP Process</h3>
@@ -261,72 +199,32 @@ NRKGP Algorithm Details:
             </p>
 
             <div class="diagram">
-                <pre class="ascii-diagram">
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Data Encryption Process                       │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────┐          ┌─────────────────────┐
-│     Track2 Data     │          │   Session Key with  │
-│   PAN, Expiry,      │          │   Data Variant      │
-│   Service Code      │          │     Mask Applied    │
-└─────────┬───────────┘          └─────────┬───────────┘
-          │                                │
-          ▼                                │
-┌─────────────────────┐                    │
-│   Format Track2     │                    │
-│  Add sentinels &    │                    │
-│    separators       │                    │
-│ ;PAN=YYMM[SC][DD]?  │                    │
-└─────────┬───────────┘                    │
-          │                                │
-          ▼                                │
-┌─────────────────────┐                    │
-│   Convert to BCD    │                    │
-│ Binary Coded Decimal│                    │
-│                     │                    │
-└─────────┬───────────┘                    │
-          │                                │
-          ▼                                │
-┌─────────────────────┐                    │
-│ Pad to 8-byte blocks│                    │
-│  (DES requirement)  │                    │
-│  Right-pad with 0x00│                    │
-└─────────┬───────────┘                    │
-          │                                │
-          │                                ▼
-          │                  ┌─────────────────────┐
-          │                  │  Normalize to       │
-          │                  │   24-byte key       │
-          │                  │   K1|K2|K1          │
-          │                  │  (for 3DES)         │
-          │                  └─────────┬───────────┘
-          │                            │
-          └─────────┬──────────────────┘
-                    │
-                    ▼
-      ┌─────────────────────────────────────┐
-      │           3DES Encryption           │
-      │           (CBC Mode)               │
-      │                                    │
-      │  For each 8-byte block:            │
-      │    encrypted_block =               │
-      │      3DES_Encrypt(block, key)      │
-      └─────────────────┬───────────────────┘
-                        │
-                        ▼
-      ┌─────────────────────────────────────┐
-      │        Encrypted Track2 Data        │
-      │      Ready for transmission        │
-      └─────────────────────────────────────┘
-
-Track2 Format Example:
-  Input:  PAN=1234123412341234, Exp=12/25, SC=601, DD=123123
-  Format: ;1234123412341234=251206011231233?
-  BCD:    3B12341234123412343D251206011231233F
-  Padded: 3B12341234123412343D251206011231233F0000
-  Final:  B04B8CB78C7F5186981EF46D2D79B83F0000
-                </pre>
+                <div class="mermaid">
+flowchart TD
+    Track2[Track2 Data<br/>PAN, Expiry,<br/>Service Code]
+    SessionKey[Session Key with<br/>Data Variant<br/>Mask Applied]
+    
+    Track2 --> Format[Format Track2<br/>Add sentinels &<br/>separators<br/>;PAN=YYMM[SC][DD]?]
+    
+    Format --> BCD[Convert to BCD<br/>Binary Coded Decimal]
+    
+    BCD --> Pad[Pad to 8-byte blocks<br/>DES requirement<br/>Right-pad with 0x00]
+    
+    SessionKey --> Normalize[Normalize to<br/>24-byte key<br/>K1|K2|K1<br/>for 3DES]
+    
+    Pad --> Encrypt[3DES Encryption<br/>CBC Mode<br/><br/>For each 8-byte block:<br/>encrypted_block =<br/>3DES_Encrypt(block, key)]
+    Normalize --> Encrypt
+    
+    Encrypt --> Result[Encrypted Track2 Data<br/>Ready for transmission]
+                </div>
+                <div class="diagram-caption">
+                    <strong>Track2 Format Example:</strong><br/>
+                    Input: PAN=1234123412341234, Exp=12/25, SC=601, DD=123123<br/>
+                    Format: ;1234123412341234=251206011231233?<br/>
+                    BCD: 3B12341234123412343D251206011231233F<br/>
+                    Padded: 3B12341234123412343D251206011231233F0000<br/>
+                    Final: B04B8CB78C7F5186981EF46D2D79B83F0000
+                </div>
             </div>
 
             <h3>Track2 Format</h3>
