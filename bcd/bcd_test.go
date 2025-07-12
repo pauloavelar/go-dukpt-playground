@@ -59,12 +59,11 @@ func TestPANToBCD(t *testing.T) {
 			
 			if tt.wantErr {
 				require.Error(t, err)
-				return
+			} else {
+				require.NoError(t, err)
+				resultHex := strings.ToUpper(hex.EncodeToString(result))
+				require.Equal(t, tt.expected, resultHex)
 			}
-			
-			require.NoError(t, err)
-			resultHex := strings.ToUpper(hex.EncodeToString(result))
-			require.Equal(t, tt.expected, resultHex)
 		})
 	}
 }

@@ -38,6 +38,16 @@ func StringToBCD(str string) ([]byte, error) {
 	return bcd, nil
 }
 
+// charToNibble converts a character to a nibble value.
+// Handles both numeric characters ('0'-'9') and 'F' padding character.
+func charToNibble(c byte) byte {
+	if c == 'F' {
+		return 0xF
+	} else {
+		return c - '0'
+	}
+}
+
 // PANToBCD converts a PAN (Primary Account Number) string to BCD bytes.
 // According to ISO/IEC 7813, if the PAN has an odd number of digits,
 // a padding digit 'F' is appended to the end before BCD encoding.
@@ -53,22 +63,8 @@ func PANToBCD(pan string) ([]byte, error) {
 
 	bcd := make([]byte, len(pan)/2)
 	for i := 0; i < len(pan); i += 2 {
-		var h, l byte
-		
-		// Handle first digit
-		if pan[i] == 'F' {
-			h = 0xF
-		} else {
-			h = pan[i] - '0'
-		}
-		
-		// Handle second digit
-		if pan[i+1] == 'F' {
-			l = 0xF
-		} else {
-			l = pan[i+1] - '0'
-		}
-
+		h := charToNibble(pan[i])
+		l := charToNibble(pan[i+1])
 		bcd[i/2] = (h << 4) | l
 	}
 
