@@ -17,8 +17,6 @@ func ByteLen(str string) int {
 	return (len(str) + 1) / 2
 }
 
-
-
 // StringToBCD converts a numeric string to BCD bytes.
 func StringToBCD(str string) ([]byte, error) {
 	if !regexpNumeric.MatchString(str) {
