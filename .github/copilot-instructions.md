@@ -21,7 +21,7 @@ This document contains coding standards and rules for this Go project.
 
 ### Test Structure
 - **Avoid return statements in tests, use else blocks instead**
-- Use `strings.ToUpper` for consistent capitalization in test cases
+- Use `strings.ToUpper` for consistent capitalization of hexadecimal values in test cases
 
 ## Logic and Control Flow
 
