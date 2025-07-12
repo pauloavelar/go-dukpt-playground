@@ -32,7 +32,7 @@ func (d *Data) FormatAlt() ([]byte, error) {
 }
 
 func (d *Data) formatTrack2(sep rune) ([]byte, error) {
-	pan, err := bcd.StringToBCD(d.PAN)
+	pan, err := bcd.PANToBCD(d.PAN)
 	if err != nil {
 		return nil, err
 	}
@@ -60,5 +60,5 @@ func (d *Data) formatTrack2(sep rune) ([]byte, error) {
 }
 
 func (d *Data) byteLen() int {
-	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
+	return baseLen + bcd.PANByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
 }
