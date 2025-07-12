@@ -17,11 +17,7 @@ func ByteLen(str string) int {
 	return (len(str) + 1) / 2
 }
 
-// PANByteLen calculates the number of BCD bytes needed to represent a PAN.
-// For PANs, odd-length strings get 'F' padding appended (not prepended like regular strings).
-func PANByteLen(pan string) int {
-	return (len(pan) + 1) / 2
-}
+
 
 // StringToBCD converts a numeric string to BCD bytes.
 func StringToBCD(str string) ([]byte, error) {
@@ -62,21 +58,17 @@ func PANToBCD(pan string) ([]byte, error) {
 		var h, l byte
 		
 		// Handle first digit
-		if pan[i] >= '0' && pan[i] <= '9' {
-			h = pan[i] - '0'
-		} else if pan[i] == 'F' {
+		if pan[i] == 'F' {
 			h = 0xF
 		} else {
-			return nil, fmt.Errorf("invalid character in PAN: %c", pan[i])
+			h = pan[i] - '0'
 		}
 		
 		// Handle second digit
-		if pan[i+1] >= '0' && pan[i+1] <= '9' {
-			l = pan[i+1] - '0'
-		} else if pan[i+1] == 'F' {
+		if pan[i+1] == 'F' {
 			l = 0xF
 		} else {
-			return nil, fmt.Errorf("invalid character in PAN: %c", pan[i+1])
+			l = pan[i+1] - '0'
 		}
 
 		bcd[i/2] = (h << 4) | l

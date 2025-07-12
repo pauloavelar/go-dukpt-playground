@@ -60,5 +60,5 @@ func (d *Data) formatTrack2(sep rune) ([]byte, error) {
 }
 
 func (d *Data) byteLen() int {
-	return baseLen + bcd.PANByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
+	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
 }

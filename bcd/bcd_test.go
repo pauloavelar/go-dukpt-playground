@@ -2,7 +2,10 @@ package bcd
 
 import (
 	"encoding/hex"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestPANToBCD(t *testing.T) {
@@ -21,19 +24,19 @@ func TestPANToBCD(t *testing.T) {
 		{
 			name:     "odd length PAN (15 digits) - should append F",
 			pan:      "123412341234123",
-			expected: "123412341234123f",
+			expected: "123412341234123F",
 			wantErr:  false,
 		},
 		{
 			name:     "odd length PAN (13 digits) - should append F",
 			pan:      "1234123412341",
-			expected: "1234123412341f",
+			expected: "1234123412341F",
 			wantErr:  false,
 		},
 		{
 			name:     "odd length PAN (1 digit) - should append F",
 			pan:      "1",
-			expected: "1f",
+			expected: "1F",
 			wantErr:  false,
 		},
 		{
@@ -55,67 +58,17 @@ func TestPANToBCD(t *testing.T) {
 			result, err := PANToBCD(tt.pan)
 			
 			if tt.wantErr {
-				if err == nil {
-					t.Errorf("PANToBCD() expected error but got none")
-				}
+				require.Error(t, err)
 				return
 			}
 			
-			if err != nil {
-				t.Errorf("PANToBCD() unexpected error: %v", err)
-				return
-			}
-			
-			resultHex := hex.EncodeToString(result)
-			if resultHex != tt.expected {
-				t.Errorf("PANToBCD() = %s, expected %s", resultHex, tt.expected)
-			}
+			require.NoError(t, err)
+			resultHex := strings.ToUpper(hex.EncodeToString(result))
+			require.Equal(t, tt.expected, resultHex)
 		})
 	}
 }
 
-func TestPANByteLen(t *testing.T) {
-	tests := []struct {
-		name     string
-		pan      string
-		expected int
-	}{
-		{
-			name:     "even length PAN (16 digits)",
-			pan:      "1234123412341234",
-			expected: 8,
-		},
-		{
-			name:     "odd length PAN (15 digits)",
-			pan:      "123412341234123",
-			expected: 8, // 15 + 1 (F padding) = 16 digits = 8 bytes
-		},
-		{
-			name:     "odd length PAN (13 digits)",
-			pan:      "1234123412341",
-			expected: 7, // 13 + 1 (F padding) = 14 digits = 7 bytes
-		},
-		{
-			name:     "single digit PAN",
-			pan:      "1",
-			expected: 1, // 1 + 1 (F padding) = 2 digits = 1 byte
-		},
-		{
-			name:     "empty PAN",
-			pan:      "",
-			expected: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := PANByteLen(tt.pan)
-			if result != tt.expected {
-				t.Errorf("PANByteLen() = %d, expected %d", result, tt.expected)
-			}
-		})
-	}
-}
 
 // Test that regular BCD encoding still works as before (prepends 0 for odd lengths)
 func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
@@ -139,15 +92,10 @@ func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := StringToBCD(tt.input)
-			if err != nil {
-				t.Errorf("StringToBCD() unexpected error: %v", err)
-				return
-			}
+			require.NoError(t, err)
 			
-			resultHex := hex.EncodeToString(result)
-			if resultHex != tt.expected {
-				t.Errorf("StringToBCD() = %s, expected %s", resultHex, tt.expected)
-			}
+			resultHex := strings.ToUpper(hex.EncodeToString(result))
+			require.Equal(t, strings.ToUpper(tt.expected), resultHex)
 		})
 	}
 }

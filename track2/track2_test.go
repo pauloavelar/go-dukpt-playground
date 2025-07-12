@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestData_FormatISO_PANPadding(t *testing.T) {
@@ -40,29 +42,19 @@ func TestData_FormatISO_PANPadding(t *testing.T) {
 			}
 
 			result, err := data.FormatISO()
-			if err != nil {
-				t.Errorf("FormatISO() unexpected error: %v", err)
-				return
-			}
+			require.NoError(t, err)
 
 			resultHex := strings.ToUpper(hex.EncodeToString(result))
 			
 			// The result should start with 3B (start sentinel), followed by the PAN portion
 			expectedStart := "3B" + strings.ToUpper(tt.expPANInHex)
 			
-			if !strings.HasPrefix(resultHex, expectedStart) {
-				t.Errorf("FormatISO() result %s does not start with expected PAN portion %s", 
-					resultHex, expectedStart)
-			}
+			require.True(t, strings.HasPrefix(resultHex, expectedStart))
 
 			// Verify the PAN portion specifically
 			// Skip the start sentinel (3B) and extract the PAN portion
 			actualPANHex := resultHex[2 : 2+len(tt.expPANInHex)]
-			
-			if actualPANHex != strings.ToUpper(tt.expPANInHex) {
-				t.Errorf("PAN portion in result: got %s, expected %s", 
-					actualPANHex, strings.ToUpper(tt.expPANInHex))
-			}
+			require.Equal(t, strings.ToUpper(tt.expPANInHex), actualPANHex)
 		})
 	}
 }
@@ -78,18 +70,12 @@ func TestData_FormatAlt_PANPadding(t *testing.T) {
 	}
 
 	result, err := data.FormatAlt()
-	if err != nil {
-		t.Errorf("FormatAlt() unexpected error: %v", err)
-		return
-	}
+	require.NoError(t, err)
 
 	resultHex := strings.ToUpper(hex.EncodeToString(result))
 	
 	// Should start with 3B (start sentinel) + PAN with F padding
 	expectedStart := "3B123412341234123F"
 	
-	if !strings.HasPrefix(resultHex, expectedStart) {
-		t.Errorf("FormatAlt() result %s does not start with expected PAN portion %s", 
-			resultHex, expectedStart)
-	}
+	require.True(t, strings.HasPrefix(resultHex, expectedStart))
 }
