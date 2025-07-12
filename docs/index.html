@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUKPT Workflow Documentation</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <div class="nav-container">
+                <h1 class="nav-title">DUKPT Playground</h1>
+                <ul class="nav-menu">
+                    <li><a href="#overview" class="nav-link">Overview</a></li>
+                    <li><a href="#workflow" class="nav-link">Workflow</a></li>
+                    <li><a href="#ipek" class="nav-link">IPEK Derivation</a></li>
+                    <li><a href="#session-keys" class="nav-link">Session Keys</a></li>
+                    <li><a href="#encryption" class="nav-link">Data Encryption</a></li>
+                    <li><a href="#examples" class="nav-link">Examples</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section id="overview" class="section">
+            <h2>DUKPT Overview</h2>
+            <p>
+                <strong>DUKPT (Derived Unique Key Per Transaction)</strong> is a key management scheme 
+                used in secure payment processing systems. It ensures that each transaction uses a 
+                unique encryption key, preventing replay attacks and enhancing security.
+            </p>
+            
+            <h3>Key Components</h3>
+            <ul>
+                <li><strong>BDK (Base Derivation Key)</strong>: A 16-byte master key</li>
+                <li><strong>KSN (Key Serial Number)</strong>: A 10-byte identifier containing device ID and transaction counter</li>
+                <li><strong>IPEK (Initial PIN Encryption Key)</strong>: Derived from BDK and KSN</li>
+                <li><strong>Session Key</strong>: Unique key derived for each transaction</li>
+            </ul>
+
+            <h3>Security Benefits</h3>
+            <ul>
+                <li>Each transaction uses a unique encryption key</li>
+                <li>Keys cannot be reverse-engineered from encrypted data</li>
+                <li>Non-reversible key generation process (NRKGP)</li>
+                <li>Limited key exposure in case of compromise</li>
+            </ul>
+        </section>
+
+        <section id="workflow" class="section">
+            <h2>Complete DUKPT Workflow</h2>
+            <p>The following diagram shows the complete DUKPT transaction workflow:</p>
+            
+            <div class="diagram">
+                <pre class="ascii-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DUKPT Transaction Flow                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌──────────┐           ┌──────────┐           ┌─────────────────┐
+│ Terminal │           │   Card   │           │ Key Management  │
+│          │           │          │           │      (HSM)      │
+└────┬─────┘           └────┬─────┘           └────┬────────────┘
+     │                      │                      │
+     │ Request Track Data   │                      │
+     │─────────────────────▶│                      │
+     │                      │                      │
+     │ Track2 Data (PAN, Exp, etc.)                │
+     │◀─────────────────────│                      │
+     │                      │                      │
+┌────┴─────────────────────────────────────────────┴────────────────┐
+│ Terminal derives encryption keys locally:                          │
+│ 1. Derive IPEK from BDK + KSN                                    │
+│ 2. Extract transaction counter from KSN                          │
+│ 3. Derive Session Key using NRKGP                               │
+│ 4. Apply data variant mask                                       │
+│ 5. Encrypt Track2 with 3DES                                     │
+└────┬─────────────────────────────────────────────┬────────────────┘
+     │                      │                      │
+     │      Send Encrypted Data + KSN              │
+     │─────────────────────────────────────────────▶│
+     │                      │                      │
+     │                      │     ┌────────────────┴────────────────┐
+     │                      │     │ HSM recreates same keys:        │
+     │                      │     │ 1. Derive IPEK from BDK + KSN  │
+     │                      │     │ 2. Derive same Session Key     │
+     │                      │     │ 3. Decrypt Track2 data         │
+     │                      │     └────────────────┬────────────────┘
+     │                      │                      │
+     │      Transaction Authorization              │
+     │◀─────────────────────────────────────────────│
+     │                      │                      │
+
+Key Security Properties:
+• Each transaction uses a unique session key
+• Keys cannot be reverse-engineered from encrypted data
+• Non-reversible key generation process (NRKGP)
+• Limited key exposure if device is compromised
+                </pre>
+            </div>
+        </section>
+
+        <section id="ipek" class="section">
+            <h2>IPEK Derivation Process</h2>
+            <p>
+                The Initial PIN Encryption Key (IPEK) is derived from the Base Derivation Key (BDK) 
+                and the Key Serial Number (KSN). This is the first step in the DUKPT process.
+            </p>
+
+            <div class="diagram">
+                <pre class="ascii-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                        IPEK Derivation Process                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐          ┌─────────────────────┐
+│        BDK          │          │        KSN          │
+│  Base Derivation    │          │   Key Serial        │
+│      Key            │          │     Number          │
+│     16 bytes        │          │     10 bytes        │
+└─────────┬───────────┘          └─────────┬───────────┘
+          │                                │
+          │                                │
+          ▼                                ▼
+┌─────────────────────┐          ┌─────────────────────┐
+│    Mask BDK with    │          │    Mask KSN for    │
+│  0xC0C0C0C0...C0    │          │       IPEK         │
+│                     │          │  (first 8 bytes,   │
+│                     │          │ clear last 5 bits) │
+└─────────┬───────────┘          └─────────┬───────────┘
+          │                                │
+          │ Masked BDK                     │ Masked KSN
+          │                                │
+          └─────────┬──────────────────────┘
+                    │
+                    ▼
+      ┌─────────────────────────────────────┐
+      │         3DES Encryption             │
+      │                                     │
+      │  Left Half:  Encrypt Masked KSN     │
+      │              with original BDK      │
+      │                                     │
+      │  Right Half: Encrypt Masked KSN     │
+      │              with masked BDK        │
+      └─────────────────┬───────────────────┘
+                        │
+                        ▼
+      ┌─────────────────────────────────────┐
+      │              IPEK                   │
+      │   Initial PIN Encryption Key        │
+      │         Left || Right               │
+      │           16 bytes                  │
+      └─────────────────────────────────────┘
+
+Mathematical Representation:
+  IPEK_Left  = 3DES_Encrypt(Masked_KSN, BDK)
+  IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)
+  IPEK       = IPEK_Left || IPEK_Right
+                </pre>
+            </div>
+
+            <h3>Implementation Details</h3>
+            <p>The IPEK derivation follows these specific steps:</p>
+            <ol>
+                <li><strong>KSN Masking</strong>: Extract the first 8 bytes and clear the last 5 bits of the 8th byte</li>
+                <li><strong>BDK Masking</strong>: XOR the BDK with the fixed mask defined in ANSI X9.24-1:2017</li>
+                <li><strong>Left Half</strong>: 3DES encrypt the masked KSN using the original BDK</li>
+                <li><strong>Right Half</strong>: 3DES encrypt the masked KSN using the masked BDK</li>
+                <li><strong>Combine</strong>: Concatenate left and right halves to form the 16-byte IPEK</li>
+            </ol>
+        </section>
+
+        <section id="session-keys" class="section">
+            <h2>Session Key Derivation</h2>
+            <p>
+                Session keys are derived from the IPEK using the Non-Reversible Key Generation Process (NRKGP).
+                Each transaction uses a unique session key based on the transaction counter in the KSN.
+            </p>
+
+            <div class="diagram">
+                <pre class="ascii-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Session Key Derivation (NRKGP)                  │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐          ┌─────────────────────┐
+│        IPEK         │          │        KSN          │
+│   (from previous    │          │   Key Serial        │
+│      step)          │          │     Number          │
+│     16 bytes        │          │     10 bytes        │
+└─────────┬───────────┘          └─────────┬───────────┘
+          │                                │
+          │                                │
+          ▼                                ▼
+┌─────────────────────┐          ┌─────────────────────┐
+│   Session Key       │          │   Extract from KSN: │
+│   = IPEK            │          │  • KSI (Key Set ID) │
+│   (initially)       │          │  • Counter (21 bits)│
+└─────────┬───────────┘          └─────────┬───────────┘
+          │                                │
+          │                                │
+          └────────────┬───────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │     For each bit set in counter: │
+        │                                  │
+        │  1. Build KSN register with      │
+        │     single bit set               │
+        │                                  │
+        │  2. Apply NRKGP:                 │
+        │     • Mask key with 0xC0         │
+        │     • Split into L/R halves      │
+        │     • DES encrypt each half      │
+        │     • Combine encrypted halves   │
+        │                                  │
+        │  3. Update session key           │
+        └──────────────┬───────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │        Apply Data Mask          │
+        │   0x0000000000FF00000...FF0000   │
+        └──────────────┬───────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │        Final Session Key        │
+        │      Ready for encryption       │
+        │           16 bytes              │
+        └─────────────────────────────────┘
+
+NRKGP Algorithm Details:
+  For bit_position in transaction_counter:
+    if bit is set:
+      ksn_reg = build_ksn_register(ksi, bit_position)
+      session_key = nrkgp(session_key, ksn_reg)
+  
+  session_key = apply_data_mask(session_key)
+                </pre>
+            </div>
+
+            <h3>NRKGP Process</h3>
+            <p>The Non-Reversible Key Generation Process ensures forward security:</p>
+            <ol>
+                <li>Mask the current key with 0xC0 (XOR)</li>
+                <li>Split the masked key into left and right halves</li>
+                <li>DES encrypt each half with the KSN register data</li>
+                <li>Combine the encrypted halves to form the new key</li>
+                <li>Repeat for each bit set in the transaction counter</li>
+            </ol>
+        </section>
+
+        <section id="encryption" class="section">
+            <h2>Data Encryption Process</h2>
+            <p>
+                The final step encrypts the actual track data using the derived session key.
+                Track2 data contains payment card information in a standardized format.
+            </p>
+
+            <div class="diagram">
+                <pre class="ascii-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Data Encryption Process                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐          ┌─────────────────────┐
+│     Track2 Data     │          │   Session Key with  │
+│   PAN, Expiry,      │          │   Data Variant      │
+│   Service Code      │          │     Mask Applied    │
+└─────────┬───────────┘          └─────────┬───────────┘
+          │                                │
+          ▼                                │
+┌─────────────────────┐                    │
+│   Format Track2     │                    │
+│  Add sentinels &    │                    │
+│    separators       │                    │
+│ ;PAN=YYMM[SC][DD]?  │                    │
+└─────────┬───────────┘                    │
+          │                                │
+          ▼                                │
+┌─────────────────────┐                    │
+│   Convert to BCD    │                    │
+│ Binary Coded Decimal│                    │
+│                     │                    │
+└─────────┬───────────┘                    │
+          │                                │
+          ▼                                │
+┌─────────────────────┐                    │
+│ Pad to 8-byte blocks│                    │
+│  (DES requirement)  │                    │
+│  Right-pad with 0x00│                    │
+└─────────┬───────────┘                    │
+          │                                │
+          │                                ▼
+          │                  ┌─────────────────────┐
+          │                  │  Normalize to       │
+          │                  │   24-byte key       │
+          │                  │   K1|K2|K1          │
+          │                  │  (for 3DES)         │
+          │                  └─────────┬───────────┘
+          │                            │
+          └─────────┬──────────────────┘
+                    │
+                    ▼
+      ┌─────────────────────────────────────┐
+      │           3DES Encryption           │
+      │           (CBC Mode)               │
+      │                                    │
+      │  For each 8-byte block:            │
+      │    encrypted_block =               │
+      │      3DES_Encrypt(block, key)      │
+      └─────────────────┬───────────────────┘
+                        │
+                        ▼
+      ┌─────────────────────────────────────┐
+      │        Encrypted Track2 Data        │
+      │      Ready for transmission        │
+      └─────────────────────────────────────┘
+
+Track2 Format Example:
+  Input:  PAN=1234123412341234, Exp=12/25, SC=601, DD=123123
+  Format: ;1234123412341234=251206011231233?
+  BCD:    3B12341234123412343D251206011231233F
+  Padded: 3B12341234123412343D251206011231233F0000
+  Final:  B04B8CB78C7F5186981EF46D2D79B83F0000
+                </pre>
+            </div>
+
+            <h3>Track2 Format</h3>
+            <p>Track2 data follows ISO/IEC 7813 format:</p>
+            <pre><code>;PAN=YYMM[ServiceCode][DiscretionaryData]?</code></pre>
+            <ul>
+                <li><strong>;</strong> - Start sentinel</li>
+                <li><strong>PAN</strong> - Primary Account Number (card number)</li>
+                <li><strong>=</strong> - Field separator</li>
+                <li><strong>YYMM</strong> - Expiration date (year/month)</li>
+                <li><strong>ServiceCode</strong> - 3-digit service code (optional)</li>
+                <li><strong>DiscretionaryData</strong> - Additional data (optional)</li>
+                <li><strong>?</strong> - End sentinel</li>
+            </ul>
+        </section>
+
+        <section id="examples" class="section">
+            <h2>Practical Examples</h2>
+            <p>Here are real examples from the Go implementation:</p>
+
+            <h3>Example Transaction</h3>
+            <div class="example">
+                <h4>Input Parameters:</h4>
+                <pre><code>BDK: 0123456789ABCDEFFEDCBA9876543210
+KSN: 12345678901234567890
+
+Track2 Data:
+  PAN: 1234123412341234
+  Expiry: 12/2025
+  Service Code: 601
+  Discretionary Data: 123123</code></pre>
+
+                <h4>Process:</h4>
+                <pre><code>1. Formatted Track2: 3B12341234123412343D251206011231233F
+2. IPEK Derivation: [derived from BDK + masked KSN]
+3. Session Key: [derived using NRKGP process]
+4. Encrypted Result: B04B8CB78C7F5186981EF46D2D79B83F0000</code></pre>
+            </div>
+
+            <h3>Code Usage</h3>
+            <div class="example">
+                <pre><code>// Go implementation example
+package main
+
+import (
+    "encoding/hex"
+    "github.com/pauloavelar/go-dukpt-playground/dukpt"
+    "github.com/pauloavelar/go-dukpt-playground/track2"
+)
+
+func main() {
+    // Define test keys
+    bdk := mustDecodeHex("0123456789ABCDEFFEDCBA9876543210")
+    ksn := mustDecodeHex("12345678901234567890")
+    
+    // Create track2 data
+    t2 := track2.Data{
+        PAN:               "1234123412341234",
+        ExpYear:           2025,
+        ExpMonth:          12,
+        ServiceCode:       "601",
+        DiscretionaryData: "123123",
+    }
+    
+    // Format and encrypt
+    formatted, err := t2.FormatISO()
+    if err != nil {
+        panic(err)
+    }
+    
+    encrypted, err := dukpt.EncryptTrack2(formatted, bdk, ksn)
+    if err != nil {
+        panic(err)
+    }
+    
+    fmt.Printf("Encrypted: %s\n", hex.EncodeToString(encrypted))
+}</code></pre>
+            </div>
+
+            <h3>Key Derivation Examples</h3>
+            <div class="example">
+                <h4>IPEK Derivation Steps:</h4>
+                <pre><code>Original KSN: 12345678901234567890
+Masked KSN:   123456789012345678E0  (last 5 bits cleared)
+BDK Mask:     C0C0C0C000000000C0C0C0C000000000
+Masked BDK:   C1E396C589ABCDEFFE1C7AC876543210
+
+Left Half:  3DES_Encrypt(Masked_KSN, Original_BDK)
+Right Half: 3DES_Encrypt(Masked_KSN, Masked_BDK)
+IPEK:       Left_Half || Right_Half</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 DUKPT Playground. Educational implementation of DUKPT key management.</p>
+            <p>
+                <a href="https://github.com/pauloavelar/go-dukpt-playground">View on GitHub</a> |
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE">License</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
