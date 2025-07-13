@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DUKPT Workflow Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -15,7 +17,7 @@
                 console.warn('Mermaid.js failed to load from CDN. Diagrams will show as text.');
                 // Add a notice to the page
                 const notice = document.createElement('div');
-                notice.style.cssText = 'background: #fef3cd; border: 1px solid #ffeaa7; padding: 1rem; margin: 1rem; border-radius: 4px; color: #856404;';
+                notice.className = 'alert alert-warning mx-3 mt-3';
                 notice.innerHTML = '<strong>Note:</strong> This page uses Mermaid.js from an external CDN for diagram rendering. If diagrams appear as text, please ensure external resources can be loaded.';
                 document.body.insertBefore(notice, document.body.firstChild);
             }
@@ -23,54 +25,76 @@
     </script>
 </head>
 <body>
-    <header>
-        <nav class="nav">
-            <div class="nav-container">
-                <h1 class="nav-title">DUKPT Playground</h1>
-                <ul class="nav-menu">
-                    <li><a href="#overview" class="nav-link">Overview</a></li>
-                    <li><a href="#workflow" class="nav-link">Workflow</a></li>
-                    <li><a href="#ipek" class="nav-link">IPEK Derivation</a></li>
-                    <li><a href="#session-keys" class="nav-link">Session Keys</a></li>
-                    <li><a href="#encryption" class="nav-link">Data Encryption</a></li>
-                    <li><a href="#examples" class="nav-link">Examples</a></li>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">DUKPT Playground</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#overview">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#workflow">Workflow</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#ipek">IPEK Derivation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#session-keys">Session Keys</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#encryption">Data Encryption</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#examples">Examples</a>
+                    </li>
                 </ul>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
-    <main class="container">
-        <section id="overview" class="section">
-            <h2>DUKPT Overview</h2>
-            <p>
-                <strong>DUKPT (Derived Unique Key Per Transaction)</strong> is a key management scheme 
-                used in secure payment processing systems. It ensures that each transaction uses a 
-                unique encryption key, preventing replay attacks and enhancing security.
-            </p>
+    <div class="container my-5">
+        <section id="overview" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">DUKPT Overview</h2>
+                    <p class="lead">
+                        <strong>DUKPT (Derived Unique Key Per Transaction)</strong> is a key management scheme 
+                        used in secure payment processing systems. It ensures that each transaction uses a 
+                        unique encryption key, preventing replay attacks and enhancing security.
+                    </p>
             
-            <h3>Key Components</h3>
-            <ul>
-                <li><strong>BDK (Base Derivation Key)</strong>: A 16-byte master key</li>
-                <li><strong>KSN (Key Serial Number)</strong>: A 10-byte identifier containing device ID and transaction counter</li>
-                <li><strong>IPEK (Initial PIN Encryption Key)</strong>: Derived from BDK and KSN</li>
-                <li><strong>Session Key</strong>: Unique key derived for each transaction</li>
+            <h3 class="mt-4">Key Components</h3>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>BDK (Base Derivation Key)</strong>: A 16-byte master key</li>
+                <li class="list-group-item"><strong>KSN (Key Serial Number)</strong>: A 10-byte identifier containing device ID and transaction counter</li>
+                <li class="list-group-item"><strong>IPEK (Initial PIN Encryption Key)</strong>: Derived from BDK and KSN</li>
+                <li class="list-group-item"><strong>Session Key</strong>: Unique key derived for each transaction</li>
             </ul>
 
-            <h3>Security Benefits</h3>
-            <ul>
-                <li>Each transaction uses a unique encryption key</li>
-                <li>Keys cannot be reverse-engineered from encrypted data</li>
-                <li>Non-reversible key generation process (NRKGP)</li>
-                <li>Limited key exposure in case of compromise</li>
+            <h3 class="mt-4">Security Benefits</h3>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Each transaction uses a unique encryption key</li>
+                <li class="list-group-item">Keys cannot be reverse-engineered from encrypted data</li>
+                <li class="list-group-item">Non-reversible key generation process (NRKGP)</li>
+                <li class="list-group-item">Limited key exposure in case of compromise</li>
             </ul>
+                </div>
+            </div>
         </section>
 
-        <section id="workflow" class="section">
-            <h2>Complete DUKPT Workflow</h2>
-            <p>The following diagram shows the complete DUKPT transaction workflow:</p>
-            
-            <div class="diagram">
-                <div class="mermaid">
+        <section id="workflow" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Complete DUKPT Workflow</h2>
+                    <p>The following diagram shows the complete DUKPT transaction workflow:</p>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid">
 sequenceDiagram
     participant T as Terminal
     participant C as Card
@@ -86,28 +110,34 @@ sequenceDiagram
     Note over H: HSM recreates same keys:<br/>1. Derive IPEK from BDK + KSN<br/>2. Derive same Session Key<br/>3. Decrypt Track2 data
     
     H->>T: Transaction Authorization
-                </div>
-                <div class="diagram-caption">
-                    <strong>Key Security Properties:</strong>
-                    <ul>
-                        <li>Each transaction uses a unique session key</li>
-                        <li>Keys cannot be reverse-engineered from encrypted data</li>
-                        <li>Non-reversible key generation process (NRKGP)</li>
-                        <li>Limited key exposure if device is compromised</li>
-                    </ul>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title mb-3">Key Security Properties:</h6>
+                            <ul class="mb-0">
+                                <li>Each transaction uses a unique session key</li>
+                                <li>Keys cannot be reverse-engineered from encrypted data</li>
+                                <li>Non-reversible key generation process (NRKGP)</li>
+                                <li>Limited key exposure if device is compromised</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="ipek" class="section">
-            <h2>IPEK Derivation Process</h2>
-            <p>
-                The Initial PIN Encryption Key (IPEK) is derived from the Base Derivation Key (BDK) 
-                and the Key Serial Number (KSN). This is the first step in the DUKPT process.
-            </p>
+        <section id="ipek" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">IPEK Derivation Process</h2>
+                    <p>
+                        The Initial PIN Encryption Key (IPEK) is derived from the Base Derivation Key (BDK) 
+                        and the Key Serial Number (KSN). This is the first step in the DUKPT process.
+                    </p>
 
-            <div class="diagram">
-                <div class="mermaid">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid">
 flowchart TD
     BDK[BDK<br/>Base Derivation Key<br/>16 bytes]
     KSN[KSN<br/>Key Serial Number<br/>10 bytes]
@@ -128,35 +158,41 @@ flowchart TD
     
     IPEKLeft --> IPEK[IPEK<br/>Initial PIN Encryption Key<br/>Left || Right<br/>16 bytes]
     IPEKRight --> IPEK
-                </div>
-                <div class="diagram-caption">
-                    <strong>Mathematical Representation:</strong><br/>
-                    IPEK_Left = 3DES_Encrypt(Masked_KSN, BDK)<br/>
-                    IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)<br/>
-                    IPEK = IPEK_Left || IPEK_Right
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title">Mathematical Representation:</h6>
+                            <code class="d-block">IPEK_Left = 3DES_Encrypt(Masked_KSN, BDK)</code>
+                            <code class="d-block">IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)</code>
+                            <code class="d-block">IPEK = IPEK_Left || IPEK_Right</code>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-4">Implementation Details</h3>
+                    <p>The IPEK derivation follows these specific steps:</p>
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item"><strong>KSN Masking</strong>: Extract the first 8 bytes and clear the last 5 bits of the 8th byte</li>
+                        <li class="list-group-item"><strong>BDK Masking</strong>: XOR the BDK with the fixed mask defined in ANSI X9.24-1:2017</li>
+                        <li class="list-group-item"><strong>Left Half</strong>: 3DES encrypt the masked KSN using the original BDK</li>
+                        <li class="list-group-item"><strong>Right Half</strong>: 3DES encrypt the masked KSN using the masked BDK</li>
+                        <li class="list-group-item"><strong>Combine</strong>: Concatenate left and right halves to form the 16-byte IPEK</li>
+                    </ol>
                 </div>
             </div>
-
-            <h3>Implementation Details</h3>
-            <p>The IPEK derivation follows these specific steps:</p>
-            <ol>
-                <li><strong>KSN Masking</strong>: Extract the first 8 bytes and clear the last 5 bits of the 8th byte</li>
-                <li><strong>BDK Masking</strong>: XOR the BDK with the fixed mask defined in ANSI X9.24-1:2017</li>
-                <li><strong>Left Half</strong>: 3DES encrypt the masked KSN using the original BDK</li>
-                <li><strong>Right Half</strong>: 3DES encrypt the masked KSN using the masked BDK</li>
-                <li><strong>Combine</strong>: Concatenate left and right halves to form the 16-byte IPEK</li>
-            </ol>
         </section>
 
-        <section id="session-keys" class="section">
-            <h2>Session Key Derivation</h2>
-            <p>
-                Session keys are derived from the IPEK using the Non-Reversible Key Generation Process (NRKGP).
-                Each transaction uses a unique session key based on the transaction counter in the KSN.
-            </p>
+        <section id="session-keys" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Session Key Derivation</h2>
+                    <p>
+                        Session keys are derived from the IPEK using the Non-Reversible Key Generation Process (NRKGP).
+                        Each transaction uses a unique session key based on the transaction counter in the KSN.
+                    </p>
 
-            <div class="diagram">
-                <div class="mermaid">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid">
 flowchart TD
     IPEK[IPEK<br/>from previous step<br/>16 bytes]
     KSN[KSN<br/>Key Serial Number<br/>10 bytes]
@@ -180,38 +216,44 @@ flowchart TD
     MoreBits -->|No| ApplyMask[Apply Data Mask<br/>0x0000000000FF00000...FF0000]
     
     ApplyMask --> FinalKey[Final Session Key<br/>Ready for encryption<br/>16 bytes]
-                </div>
-                <div class="diagram-caption">
-                    <strong>NRKGP Algorithm Details:</strong><br/>
-                    For bit_position in transaction_counter:<br/>
-                    &nbsp;&nbsp;if bit is set:<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;ksn_reg = build_ksn_register(ksi, bit_position)<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;session_key = nrkgp(session_key, ksn_reg)<br/>
-                    <br/>
-                    session_key = apply_data_mask(session_key)
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title">NRKGP Algorithm Details:</h6>
+                            <pre class="mb-0"><code>For bit_position in transaction_counter:
+  if bit is set:
+    ksn_reg = build_ksn_register(ksi, bit_position)
+    session_key = nrkgp(session_key, ksn_reg)
+
+session_key = apply_data_mask(session_key)</code></pre>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-4">NRKGP Process</h3>
+                    <p>The Non-Reversible Key Generation Process ensures forward security:</p>
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item">Mask the current key with 0xC0 (XOR)</li>
+                        <li class="list-group-item">Split the masked key into left and right halves</li>
+                        <li class="list-group-item">DES encrypt each half with the KSN register data</li>
+                        <li class="list-group-item">Combine the encrypted halves to form the new key</li>
+                        <li class="list-group-item">Repeat for each bit set in the transaction counter</li>
+                    </ol>
                 </div>
             </div>
-
-            <h3>NRKGP Process</h3>
-            <p>The Non-Reversible Key Generation Process ensures forward security:</p>
-            <ol>
-                <li>Mask the current key with 0xC0 (XOR)</li>
-                <li>Split the masked key into left and right halves</li>
-                <li>DES encrypt each half with the KSN register data</li>
-                <li>Combine the encrypted halves to form the new key</li>
-                <li>Repeat for each bit set in the transaction counter</li>
-            </ol>
         </section>
 
-        <section id="encryption" class="section">
-            <h2>Data Encryption Process</h2>
-            <p>
-                The final step encrypts the actual track data using the derived session key.
-                Track2 data contains payment card information in a standardized format.
-            </p>
+        <section id="encryption" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Data Encryption Process</h2>
+                    <p>
+                        The final step encrypts the actual track data using the derived session key.
+                        Track2 data contains payment card information in a standardized format.
+                    </p>
 
-            <div class="diagram">
-                <div class="mermaid">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid">
 flowchart TD
     Track2[Track2 Data<br/>PAN, Expiry,<br/>Service Code]
     SessionKey[Session Key with<br/>Data Variant<br/>Mask Applied]
@@ -228,39 +270,49 @@ flowchart TD
     Normalize --> Encrypt
     
     Encrypt --> Result[Encrypted Track2 Data<br/>Ready for transmission]
-                </div>
-                <div class="diagram-caption">
-                    <strong>Track2 Format Example:</strong><br/>
-                    Input: PAN=1234123412341234, Exp=12/25, SC=601, DD=123123<br/>
-                    Format: ;1234123412341234=251206011231233?<br/>
-                    BCD: 3B12341234123412343D251206011231233F<br/>
-                    Padded: 3B12341234123412343D251206011231233F0000<br/>
-                    Final: B04B8CB78C7F5186981EF46D2D79B83F0000
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title">Track2 Format Example:</h6>
+                            <small class="text-muted d-block">Input: PAN=1234123412341234, Exp=12/25, SC=601, DD=123123</small>
+                            <code class="d-block">Format: ;1234123412341234=251206011231233?</code>
+                            <code class="d-block">BCD: 3B12341234123412343D251206011231233F</code>
+                            <code class="d-block">Padded: 3B12341234123412343D251206011231233F0000</code>
+                            <code class="d-block">Final: B04B8CB78C7F5186981EF46D2D79B83F0000</code>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-4">Track2 Format</h3>
+                    <p>Track2 data follows ISO/IEC 7813 format:</p>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <code>;PAN=YYMM[ServiceCode][DiscretionaryData]?</code>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>;</strong> - Start sentinel</li>
+                        <li class="list-group-item"><strong>PAN</strong> - Primary Account Number (card number)</li>
+                        <li class="list-group-item"><strong>=</strong> - Field separator</li>
+                        <li class="list-group-item"><strong>YYMM</strong> - Expiration date (year/month)</li>
+                        <li class="list-group-item"><strong>ServiceCode</strong> - 3-digit service code (optional)</li>
+                        <li class="list-group-item"><strong>DiscretionaryData</strong> - Additional data (optional)</li>
+                        <li class="list-group-item"><strong>?</strong> - End sentinel</li>
+                    </ul>
                 </div>
             </div>
-
-            <h3>Track2 Format</h3>
-            <p>Track2 data follows ISO/IEC 7813 format:</p>
-            <pre><code>;PAN=YYMM[ServiceCode][DiscretionaryData]?</code></pre>
-            <ul>
-                <li><strong>;</strong> - Start sentinel</li>
-                <li><strong>PAN</strong> - Primary Account Number (card number)</li>
-                <li><strong>=</strong> - Field separator</li>
-                <li><strong>YYMM</strong> - Expiration date (year/month)</li>
-                <li><strong>ServiceCode</strong> - 3-digit service code (optional)</li>
-                <li><strong>DiscretionaryData</strong> - Additional data (optional)</li>
-                <li><strong>?</strong> - End sentinel</li>
-            </ul>
         </section>
 
-        <section id="examples" class="section">
-            <h2>Practical Examples</h2>
-            <p>Here are real examples from the Go implementation:</p>
+        <section id="examples" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Practical Examples</h2>
+                    <p>Here are real examples from the Go implementation:</p>
 
-            <h3>Example Transaction</h3>
-            <div class="example">
-                <h4>Input Parameters:</h4>
-                <pre><code>BDK: 0123456789ABCDEFFEDCBA9876543210
+                    <h3 class="mt-4">Example Transaction</h3>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Input Parameters:</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0"><code>BDK: 0123456789ABCDEFFEDCBA9876543210
 KSN: 12345678901234567890
 
 Track2 Data:
@@ -268,17 +320,28 @@ Track2 Data:
   Expiry: 12/2025
   Service Code: 601
   Discretionary Data: 123123</code></pre>
+                        </div>
+                    </div>
 
-                <h4>Process:</h4>
-                <pre><code>1. Formatted Track2: 3B12341234123412343D251206011231233F
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Process:</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0"><code>1. Formatted Track2: 3B12341234123412343D251206011231233F
 2. IPEK Derivation: [derived from BDK + masked KSN]
 3. Session Key: [derived using NRKGP process]
 4. Encrypted Result: B04B8CB78C7F5186981EF46D2D79B83F0000</code></pre>
-            </div>
+                        </div>
+                    </div>
 
-            <h3>Code Usage</h3>
-            <div class="example">
-                <pre><code>// Go implementation example
+                    <h3 class="mt-4">Code Usage</h3>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Go Implementation Example</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0"><code>// Go implementation example
 package main
 
 import (
@@ -314,12 +377,16 @@ func main() {
     
     fmt.Printf("Encrypted: %s\n", hex.EncodeToString(encrypted))
 }</code></pre>
-            </div>
+                        </div>
+                    </div>
 
-            <h3>Key Derivation Examples</h3>
-            <div class="example">
-                <h4>IPEK Derivation Steps:</h4>
-                <pre><code>Original KSN: 12345678901234567890
+                    <h3 class="mt-4">Key Derivation Examples</h3>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">IPEK Derivation Steps:</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0"><code>Original KSN: 12345678901234567890
 Masked KSN:   123456789012345678E0  (last 5 bits cleared)
 BDK Mask:     C0C0C0C000000000C0C0C0C000000000
 Masked BDK:   C1E396C589ABCDEFFE1C7AC876543210
@@ -327,16 +394,19 @@ Masked BDK:   C1E396C589ABCDEFFE1C7AC876543210
 Left Half:  3DES_Encrypt(Masked_KSN, Original_BDK)
 Right Half: 3DES_Encrypt(Masked_KSN, Masked_BDK)
 IPEK:       Left_Half || Right_Half</code></pre>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-    </main>
+    </div>
 
-    <footer class="footer">
+    <footer class="bg-dark text-light text-center py-4 mt-5">
         <div class="container">
-            <p>&copy; 2024 DUKPT Playground. Educational implementation of DUKPT key management.</p>
-            <p>
-                <a href="https://github.com/pauloavelar/go-dukpt-playground">View on GitHub</a> |
-                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE">License</a>
+            <p class="mb-2">&copy; 2024 DUKPT Playground. Educational implementation of DUKPT key management.</p>
+            <p class="mb-0">
+                <a href="https://github.com/pauloavelar/go-dukpt-playground" class="text-info">View on GitHub</a> |
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="text-info">License</a>
             </p>
         </div>
     </footer>
