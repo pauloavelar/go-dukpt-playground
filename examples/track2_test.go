@@ -8,7 +8,7 @@ import (
 )
 
 func ExampleEncryptTrack2() {
-	enc, err := dukpt.EncryptTrack2("TODO", []byte{}, []byte{})
+	enc, err := dukpt.EncryptTrack2([]byte("TODO"), []byte{}, []byte{})
 
 	fmt.Println(hex.EncodeToString(enc), err)
 }
