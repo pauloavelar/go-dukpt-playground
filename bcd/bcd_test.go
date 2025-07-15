@@ -68,6 +68,66 @@ func TestPANToBCD(t *testing.T) {
 	}
 }
 
+func TestServiceDataToBCD(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string // hex representation of expected BCD
+		wantErr  bool
+	}{
+		{
+			name:     "even length service data",
+			input:    "601123",
+			expected: "601123",
+			wantErr:  false,
+		},
+		{
+			name:     "odd length service data - should append F",
+			input:    "60112",
+			expected: "60112F",
+			wantErr:  false,
+		},
+		{
+			name:     "single digit - should append F",
+			input:    "1",
+			expected: "1F",
+			wantErr:  false,
+		},
+		{
+			name:     "three digits - should append F",
+			input:    "601",
+			expected: "601F",
+			wantErr:  false,
+		},
+		{
+			name:     "invalid service data with letters",
+			input:    "601A",
+			expected: "",
+			wantErr:  true,
+		},
+		{
+			name:     "empty service data",
+			input:    "",
+			expected: "",
+			wantErr:  false, // empty should be valid (results in empty BCD)
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ServiceDataToBCD(tt.input)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				resultHex := strings.ToUpper(hex.EncodeToString(result))
+				require.Equal(t, strings.ToUpper(tt.expected), resultHex)
+			}
+		})
+	}
+}
+
 // Test that regular BCD encoding still works as before (prepends 0 for odd lengths)
 func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
 	tests := []struct {

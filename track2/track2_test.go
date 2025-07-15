@@ -8,6 +8,66 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestData_FormatISO_ServiceDataPadding(t *testing.T) {
+	tests := []struct {
+		name                string
+		serviceCode         string
+		discretionaryData   string
+		expServiceDataInHex string // expected service+discretionary portion in hex
+	}{
+		{
+			name:                "even length combined (6 digits)",
+			serviceCode:         "601",
+			discretionaryData:   "123",
+			expServiceDataInHex: "601123", // no padding needed
+		},
+		{
+			name:                "odd length combined (5 digits) - should append F",
+			serviceCode:         "601",
+			discretionaryData:   "12",
+			expServiceDataInHex: "60112F", // F padding appended
+		},
+		{
+			name:                "odd length combined (3 digits) - should append F",
+			serviceCode:         "601",
+			discretionaryData:   "",
+			expServiceDataInHex: "601F", // F padding appended
+		},
+		{
+			name:                "odd length combined (1 digit) - should append F",
+			serviceCode:         "1",
+			discretionaryData:   "",
+			expServiceDataInHex: "1F", // F padding appended
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := &Data{
+				PAN:               "1234123412341234", // 16 digits (even)
+				ExpYear:           2025,
+				ExpMonth:          12,
+				ServiceCode:       tt.serviceCode,
+				DiscretionaryData: tt.discretionaryData,
+			}
+
+			result, err := data.FormatISO()
+			require.NoError(t, err)
+
+			resultHex := strings.ToUpper(hex.EncodeToString(result))
+
+			// Extract the service data portion
+			// Structure: 3B + PAN(16) + 3D + 25 + 12 + ServiceData + 3F
+			// PAN is 16 hex chars, so service data starts at position 2+16+2+2+2 = 24
+			serviceDataStart := 24
+			serviceDataEnd := len(resultHex) - 2 // exclude the end sentinel (3F)
+			actualServiceDataHex := resultHex[serviceDataStart:serviceDataEnd]
+
+			require.Equal(t, strings.ToUpper(tt.expServiceDataInHex), actualServiceDataHex)
+		})
+	}
+}
+
 func TestData_FormatISO_PANPadding(t *testing.T) {
 	tests := []struct {
 		name        string

@@ -37,7 +37,7 @@ func (d *Data) formatTrack2(sep rune) ([]byte, error) {
 		return nil, err
 	}
 
-	etc, err := bcd.StringToBCD(d.ServiceCode + d.DiscretionaryData)
+	etc, err := bcd.ServiceDataToBCD(d.ServiceCode + d.DiscretionaryData)
 	if err != nil {
 		return nil, err
 	}
@@ -60,5 +60,10 @@ func (d *Data) formatTrack2(sep rune) ([]byte, error) {
 }
 
 func (d *Data) byteLen() int {
-	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
+	serviceDataLen := len(d.ServiceCode + d.DiscretionaryData)
+	// Account for F-padding if service data length is odd
+	if serviceDataLen%2 != 0 {
+		serviceDataLen++
+	}
+	return baseLen + bcd.ByteLen(d.PAN) + serviceDataLen/2
 }

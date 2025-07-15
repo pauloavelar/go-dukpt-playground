@@ -61,6 +61,34 @@ func PANToBCD(pan string) ([]byte, error) {
 	return bcd, nil
 }
 
+// ServiceDataToBCD converts service code and discretionary data to BCD bytes.
+// Similar to PAN encoding, if the combined string has an odd number of digits,
+// a padding digit 'F' is appended to the end before BCD encoding.
+func ServiceDataToBCD(serviceData string) ([]byte, error) {
+	// Handle empty service data as a special case
+	if len(serviceData) == 0 {
+		return []byte{}, nil
+	}
+
+	if !regexpNumeric.MatchString(serviceData) {
+		return nil, fmt.Errorf("invalid service data: %s", serviceData)
+	}
+
+	// For odd-length service data, append 'F' padding (same as PAN)
+	if len(serviceData)%2 != 0 {
+		serviceData = serviceData + "F"
+	}
+
+	bcd := make([]byte, len(serviceData)/2)
+	for i := 0; i < len(serviceData); i += 2 {
+		h := charToNibble(serviceData[i])
+		l := charToNibble(serviceData[i+1])
+		bcd[i/2] = (h << 4) | l
+	}
+
+	return bcd, nil
+}
+
 // IntegerToBCD converts any int-based number to BCD.
 func IntegerToBCD[T constraints.Integer](n T) []byte {
 	str := fmt.Sprintf("%02d", n)
