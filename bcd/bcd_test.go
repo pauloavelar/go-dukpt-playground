@@ -128,6 +128,60 @@ func TestServiceDataToBCD(t *testing.T) {
 	}
 }
 
+func TestNumericToRightPaddedBCD(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string // hex representation of expected BCD
+		wantErr  bool
+	}{
+		{
+			name:     "even length input",
+			input:    "1234",
+			expected: "1234",
+			wantErr:  false,
+		},
+		{
+			name:     "odd length input - should append F",
+			input:    "123",
+			expected: "123F",
+			wantErr:  false,
+		},
+		{
+			name:     "single digit - should append F",
+			input:    "5",
+			expected: "5F",
+			wantErr:  false,
+		},
+		{
+			name:     "empty input",
+			input:    "",
+			expected: "",
+			wantErr:  false,
+		},
+		{
+			name:     "invalid input with letters",
+			input:    "12A",
+			expected: "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := NumericToRightPaddedBCD(tt.input)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				resultHex := strings.ToUpper(hex.EncodeToString(result))
+				require.Equal(t, strings.ToUpper(tt.expected), resultHex)
+			}
+		})
+	}
+}
+
 // Test that regular BCD encoding still works as before (prepends 0 for odd lengths)
 func TestStringToBCD_StillWorksAsExpected(t *testing.T) {
 	tests := []struct {
