@@ -4,22 +4,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.setAttribute('data-bs-theme', prefersDark ? 'dark' : 'light');
     
-    // Load diagrams dynamically from external .mmd files
-    const diagrams = document.querySelectorAll('.mermaid[data-source]');
-    await Promise.all(Array.from(diagrams).map(async (diagram) => {
-        try {
-            const response = await fetch(`assets/diagrams/${diagram.dataset.source}.mmd`);
-            const content = await response.text();
-            diagram.textContent = content;
-        } catch (error) {
-            diagram.innerHTML = `<div class="alert alert-danger">Failed to load diagram: ${diagram.dataset.source}<br><small>${error.message}</small></div>`;
-        }
-    }));
-    
-    // Check if Mermaid is loaded and initialize
+    // Check if Mermaid is loaded first
     if (typeof mermaid !== 'undefined') {
         const mermaidTheme = prefersDark ? 'dark' : 'neutral';
-        mermaid.initialize({ startOnLoad: true, theme: mermaidTheme });
+        mermaid.initialize({ startOnLoad: false, theme: mermaidTheme });
+        
+        // Load diagrams dynamically from external .mmd files
+        const diagrams = document.querySelectorAll('.mermaid[data-source]');
+        await Promise.all(Array.from(diagrams).map(async (diagram) => {
+            try {
+                const response = await fetch(`assets/diagrams/${diagram.dataset.source}.mmd`);
+                const content = await response.text();
+                diagram.textContent = content;
+            } catch (error) {
+                diagram.innerHTML = `<div class="alert alert-danger">Failed to load diagram: ${diagram.dataset.source}<br><small>${error.message}</small></div>`;
+            }
+        }));
+        
+        // Render all loaded diagrams
+        mermaid.run();
     } else {
         console.warn('Mermaid.js failed to load from CDN. Diagrams will show as text.');
         // Add a notice to the page
