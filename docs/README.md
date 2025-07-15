@@ -50,6 +50,17 @@ To manually enable GitHub Pages:
 2. Set source to **"GitHub Actions"**
 3. The deployment workflow will handle the rest
 
+### Local Development
+
+For local development and testing:
+
+```bash
+# From repository root
+./preview-docs.sh
+```
+
+This script starts a local HTTP server at `http://localhost:8080` for previewing documentation changes before committing.
+
 ## Technical Details
 
 ### Dependencies

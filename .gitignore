@@ -26,3 +26,7 @@ go.work.sum
 .vscode/
 /main
 *.exe
+
+# Preview and deployment artifacts
+pr-preview/
+.deploy/
