@@ -1,0 +1,18 @@
+%% Data Encryption Process
+%% Shows how Track2 data is encrypted using the derived session key
+flowchart TD
+    Track2[Track2 Data<br/>PAN, Expiry,<br/>Service Code]
+    SessionKey[Session Key with<br/>Data Variant<br/>Mask Applied]
+    
+    Track2 --> Format[Format Track2<br/>Add sentinels and<br/>separators<br/>PAN with exp date]
+    
+    Format --> BCD[Convert to BCD<br/>Binary Coded Decimal]
+    
+    BCD --> Pad[Pad to 8-byte blocks<br/>DES requirement<br/>Right-pad with 0x00]
+    
+    SessionKey --> Normalize[Normalize to<br/>24-byte key<br/>K1, K2, K1<br/>for 3DES]
+    
+    Pad --> Encrypt[3DES Encryption<br/>CBC Mode<br/><br/>For each 8-byte block:<br/>Apply 3DES encryption<br/>using derived session key]
+    Normalize --> Encrypt
+    
+    Encrypt --> Result[Encrypted Track2 Data<br/>Ready for transmission]

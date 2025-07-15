@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUKPT Key Theory - DUKPT Playground</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="assets/js/diagram-loader.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary sticky-top" data-bs-theme="dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">DUKPT Playground</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Theory
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#key-hierarchy">Key Hierarchy</a></li>
+                            <li><a class="dropdown-item" href="#bdk">BDK - Base Derivation Key</a></li>
+                            <li><a class="dropdown-item" href="#ipek">IPEK - Initial PIN Encryption Key</a></li>
+                            <li><a class="dropdown-item" href="#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="#security-principles">Security Principles</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Practice
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="index.html#overview">Overview</a></li>
+                            <li><a class="dropdown-item" href="index.html#workflow">Workflow</a></li>
+                            <li><a class="dropdown-item" href="index.html#ipek">IPEK Derivation</a></li>
+                            <li><a class="dropdown-item" href="index.html#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="index.html#encryption">Data Encryption</a></li>
+                            <li><a class="dropdown-item" href="index.html#examples">Examples</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <section id="key-theory" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="border-bottom border-primary pb-2 mb-4">DUKPT Key Theory</h1>
+                    <p class="lead">
+                        Understanding the theoretical purpose and security principles behind each key in the 
+                        DUKPT (Derived Unique Key Per Transaction) hierarchy.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="key-hierarchy" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 id="key-hierarchy" class="border-bottom border-primary pb-2 mb-4">Key Hierarchy Overview</h2>
+                    <p>
+                        DUKPT employs a hierarchical key structure where each level serves a specific security purpose.
+                        The hierarchy is designed with <strong>forward secrecy</strong> and <strong>non-reversibility</strong> 
+                        as core principles.
+                    </p>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid" data-source="key-hierarchy">
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title">Security Principle:</h6>
+                            <p class="mb-0">
+                                <strong>One-way derivation ensures that compromising any key at a lower level 
+                                cannot expose keys at higher levels or keys for other devices.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="bdk-purpose" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 id="bdk" class="border-bottom border-primary pb-2 mb-4">BDK - Base Derivation Key</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h3>🔐 The Master Vault Key</h3>
+                            <p>
+                                The Base Derivation Key (BDK) is the <strong>root of trust</strong> in the entire DUKPT system.
+                                Think of it as the master key to a vault containing thousands of individual safes.
+                            </p>
+                            
+                            <h4 class="mt-4">Key Properties:</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>16-byte (128-bit) key</strong> - Sufficient entropy for cryptographic security
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Never leaves the HSM</strong> - Stored in tamper-resistant hardware
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Generates IPEKs</strong> - Used to create device-specific master keys
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Non-derivable</strong> - Cannot be reverse-engineered from any derivative key
+                                </li>
+                            </ul>
+
+                            <h4 class="mt-4">Security Rationale:</h4>
+                            <p>
+                                The BDK's isolation ensures that even if thousands of payment terminals are compromised,
+                                the master key remains secure. This protects the entire payment processing infrastructure
+                                from cascading security failures.
+                            </p>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">🚨 Critical Security</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text mb-2">
+                                        <strong>BDK Compromise = System-wide Failure</strong>
+                                    </p>
+                                    <p class="card-text mb-0 small">
+                                        If the BDK is compromised, ALL devices and transactions 
+                                        derived from it are compromised. This is why it never 
+                                        leaves the HSM's secure boundary.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ipek-purpose" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 id="ipek" class="border-bottom border-primary pb-2 mb-4">IPEK - Initial PIN Encryption Key</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h3>🔑 Device-Specific Master Key</h3>
+                            <p>
+                                The Initial PIN Encryption Key (IPEK) serves as the <strong>device-specific master key</strong>.
+                                Each payment terminal receives its own unique IPEK derived from the BDK and the device's
+                                unique identifier (KSN).
+                            </p>
+                            
+                            <h4 class="mt-4">Key Properties:</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>16-byte derived key</strong> - Generated from BDK + device KSN
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Device-unique</strong> - Each terminal has its own IPEK
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Session key generator</strong> - Creates transaction-specific keys
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>One-way derivation</strong> - Cannot be used to derive the BDK
+                                </li>
+                            </ul>
+
+                            <h4 class="mt-4">Isolation Boundary:</h4>
+                            <p>
+                                The IPEK creates an <strong>isolation boundary</strong> between devices. If one terminal
+                                is compromised, its IPEK cannot be used to generate keys for other terminals or to
+                                discover the master BDK.
+                            </p>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">✅ Device Isolation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text mb-2">
+                                        <strong>Device Compromise ≠ System Failure</strong>
+                                    </p>
+                                    <p class="card-text mb-0 small">
+                                        Even if a terminal is completely compromised and its IPEK
+                                        is extracted, other devices and the master BDK remain secure.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="session-purpose" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 id="session-keys" class="border-bottom border-primary pb-2 mb-4">Session Keys - Transaction-Specific Keys</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h3>🗝️ Unique Per Transaction</h3>
+                            <p>
+                                Session keys represent the <strong>finest granularity</strong> of the DUKPT hierarchy.
+                                Each transaction uses a completely unique encryption key, ensuring that even if one
+                                transaction's key is compromised, no other transaction is affected.
+                            </p>
+                            
+                            <h4 class="mt-4">Key Properties:</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>16-byte transaction key</strong> - Derived using NRKGP algorithm
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Counter-based derivation</strong> - Based on transaction counter in KSN
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Forward secrecy</strong> - Future keys cannot be predicted from current keys
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Non-reversible</strong> - Previous keys cannot be derived from current keys
+                                </li>
+                            </ul>
+
+                            <h4 class="mt-4">Forward Secrecy Mechanism:</h4>
+                            <p>
+                                The Non-Reversible Key Generation Process (NRKGP) ensures that session keys provide
+                                <strong>forward secrecy</strong>. Even if an attacker obtains a session key, they
+                                cannot derive previous session keys or predict future ones.
+                            </p>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card bg-info text-white">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">🛡️ Transaction Isolation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text mb-2">
+                                        <strong>Perfect Forward Secrecy</strong>
+                                    </p>
+                                    <p class="card-text mb-0 small">
+                                        Each transaction is cryptographically isolated. 
+                                        Compromising one transaction key reveals nothing 
+                                        about past or future transactions.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="security-principles" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 id="security-principles" class="border-bottom border-primary pb-2 mb-4">Core Security Principles</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h3>🔒 Non-Reversibility</h3>
+                            <p>
+                                The fundamental principle that <strong>keys cannot be derived backwards</strong> 
+                                through the hierarchy. This is achieved through cryptographic one-way functions.
+                            </p>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Mathematical Foundation:</h6>
+                                    <p class="card-text mb-0">
+                                        DUKPT uses <strong>3DES encryption</strong> as a one-way function. 
+                                        Without the encryption key, it's computationally infeasible to 
+                                        reverse the process.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h3>🛡️ Forward Secrecy</h3>
+                            <p>
+                                Even if current keys are compromised, <strong>future keys remain secure</strong>.
+                                The NRKGP algorithm ensures unpredictability of future session keys.
+                            </p>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Implementation:</h6>
+                                    <p class="card-text mb-0">
+                                        Session key derivation uses the transaction counter in a way that
+                                        makes predicting future keys impossible without knowing future counter values.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="mt-4">🏰 Defense in Depth</h3>
+                    <p>
+                        DUKPT implements multiple layers of security, each providing protection even if other layers fail:
+                    </p>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mermaid" data-source="security-layers">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="analogy" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">The Vault Analogy</h2>
+                    
+                    <div class="card bg-body-secondary">
+                        <div class="card-body">
+                            <h4 class="card-title">🏦 Think of DUKPT as a Bank's Security System</h4>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-4">
+                                    <h6>🔐 BDK = Master Vault Key</h6>
+                                    <p class="small">
+                                        The bank manager's master key that opens the main vault containing
+                                        all the individual safe deposit boxes. This key never leaves the
+                                        bank's most secure location.
+                                    </p>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <h6>🔑 IPEK = Safe Deposit Box Key</h6>
+                                    <p class="small">
+                                        Each customer gets a unique key to their specific safe deposit box.
+                                        These keys are made using the master vault key but can't be used
+                                        to create the master key or access other boxes.
+                                    </p>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <h6>🗝️ Session Key = Daily Access Code</h6>
+                                    <p class="small">
+                                        Each time you want to access your box, you need both your box key
+                                        and today's unique access code. Tomorrow's code is different and
+                                        unpredictable from today's code.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6 class="text-primary">Security Guarantee:</h6>
+                            <p class="mb-0">
+                                <strong>Even if a criminal steals your safe deposit box key and today's access code,
+                                they cannot access the master vault, other customers' boxes, or predict future access codes.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-hierarchy" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Why Use a Key Hierarchy?</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h3>❌ Alternative: Single Master Key</h3>
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        If every terminal used the same master key:
+                                    </p>
+                                    <ul class="list-unstyled mb-0">
+                                        <li>💥 <strong>Single point of failure</strong> - Compromise one terminal, compromise all</li>
+                                        <li>🔄 <strong>Key rotation nightmare</strong> - Must update every terminal simultaneously</li>
+                                        <li>📊 <strong>No transaction isolation</strong> - All transactions use the same key</li>
+                                        <li>🚨 <strong>Massive security incidents</strong> - Breach affects entire network</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h3>✅ DUKPT Hierarchy Benefits</h3>
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        The DUKPT hierarchy provides:
+                                    </p>
+                                    <ul class="list-unstyled mb-0">
+                                        <li>🛡️ <strong>Isolated failures</strong> - Device compromise doesn't spread</li>
+                                        <li>🔐 <strong>Master key protection</strong> - BDK never leaves HSM</li>
+                                        <li>🗝️ <strong>Transaction uniqueness</strong> - Every transaction has unique key</li>
+                                        <li>📈 <strong>Scalable security</strong> - Add devices without weakening system</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-body-tertiary text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-2">&copy; 2025 Paulo Avelar. Educational implementation of DUKPT key management.</p>
+            <p class="mb-0">
+                <a href="https://github.com/pauloavelar/go-dukpt-playground" class="link-primary">View on GitHub</a> |
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">MIT License</a>
+            </p>
+        </div>
+    </footer>
+
+
+</body>
+</html>
