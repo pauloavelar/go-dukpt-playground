@@ -1,0 +1,25 @@
+%% Session Key Derivation using NRKGP
+%% Shows how unique session keys are derived for each transaction
+flowchart TD
+    IPEK[IPEK<br/>from previous step<br/>16 bytes]
+    KSN[KSN<br/>Key Serial Number<br/>10 bytes]
+    
+    IPEK --> StartKey[Session Key = IPEK<br/>initially]
+    KSN --> ExtractKSN[Extract from KSN:<br/>• KSI Key Set ID<br/>• Counter 21 bits]
+    
+    ExtractKSN --> CheckBits[For each bit set in counter]
+    
+    CheckBits --> BitSet{Bit Set?}
+    BitSet -->|Yes| BuildKSN[Build KSN register<br/>with single bit set]
+    BitSet -->|No| NextBit[Check next bit]
+    
+    BuildKSN --> NRKGP[Apply NRKGP:<br/>1. Mask key with 0xC0<br/>2. Split into L/R halves<br/>3. DES encrypt each half<br/>4. Combine encrypted halves]
+    
+    NRKGP --> UpdateKey[Update session key]
+    UpdateKey --> NextBit
+    
+    NextBit --> MoreBits{More bits?}
+    MoreBits -->|Yes| CheckBits
+    MoreBits -->|No| ApplyMask[Apply Data Mask<br/>0x0000000000FF00000...FF0000]
+    
+    ApplyMask --> FinalKey[Final Session Key<br/>Ready for encryption<br/>16 bytes]

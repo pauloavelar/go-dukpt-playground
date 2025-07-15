@@ -1,0 +1,22 @@
+%% IPEK Derivation Process
+%% Shows how Initial PIN Encryption Key is derived from BDK and KSN
+flowchart TD
+    BDK[BDK<br/>Base Derivation Key<br/>16 bytes]
+    KSN[KSN<br/>Key Serial Number<br/>10 bytes]
+    
+    BDK --> MaskBDK[Mask BDK with<br/>0xC0C0C0C0...C0]
+    KSN --> MaskKSN[Mask KSN for IPEK<br/>first 8 bytes,<br/>clear last 5 bits]
+    
+    MaskBDK --> MBDK[Masked BDK]
+    MaskKSN --> MKSN[Masked KSN]
+    
+    BDK --> LeftEnc[3DES Encrypt<br/>Masked KSN with<br/>original BDK]
+    MBDK --> RightEnc[3DES Encrypt<br/>Masked KSN with<br/>masked BDK]
+    MKSN --> LeftEnc
+    MKSN --> RightEnc
+    
+    LeftEnc --> IPEKLeft[IPEK Left Half]
+    RightEnc --> IPEKRight[IPEK Right Half]
+    
+    IPEKLeft --> IPEK[IPEK<br/>Initial PIN Encryption Key<br/>Left || Right<br/>16 bytes]
+    IPEKRight --> IPEK

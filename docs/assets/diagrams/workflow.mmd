@@ -1,0 +1,17 @@
+%% DUKPT Complete Transaction Flow
+%% Shows the communication between Terminal, Card, and HSM
+sequenceDiagram
+    participant T as Terminal
+    participant C as Card
+    participant H as Key Management (HSM)
+    
+    T->>C: Request Track Data
+    C->>T: Track2 Data (PAN, Exp, etc.)
+    
+    Note over T: Terminal derives encryption keys locally:<br/>1. Derive IPEK from BDK + KSN<br/>2. Extract transaction counter from KSN<br/>3. Derive Session Key using NRKGP<br/>4. Apply data variant mask<br/>5. Encrypt Track2 with 3DES
+    
+    T->>H: Send Encrypted Data + KSN
+    
+    Note over H: HSM recreates same keys:<br/>1. Derive IPEK from BDK + KSN<br/>2. Derive same Session Key<br/>3. Decrypt Track2 data
+    
+    H->>T: Transaction Authorization
