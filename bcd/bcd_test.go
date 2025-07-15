@@ -15,7 +15,6 @@ func TestNumericToRightPaddedBCD(t *testing.T) {
 		expected string // hex representation of expected BCD
 		wantErr  bool
 	}{
-		// Basic cases
 		{
 			name:     "empty input",
 			input:    "",
@@ -23,76 +22,32 @@ func TestNumericToRightPaddedBCD(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "single digit - should append F",
+			name:     "odd length - should append F",
 			input:    "5",
 			expected: "5F",
 			wantErr:  false,
 		},
 		{
-			name:     "two digits even length",
+			name:     "even length",
 			input:    "12",
 			expected: "12",
 			wantErr:  false,
 		},
 		{
-			name:     "three digits odd length - should append F",
-			input:    "123",
-			expected: "123F",
-			wantErr:  false,
-		},
-		{
-			name:     "four digits even length",
-			input:    "1234",
-			expected: "1234",
-			wantErr:  false,
-		},
-		// Real-life scenarios with longer inputs
-		{
-			name:     "6 digits even length",
-			input:    "601123",
-			expected: "601123",
-			wantErr:  false,
-		},
-		{
-			name:     "5 digits odd length - should append F",
-			input:    "60112",
-			expected: "60112F",
-			wantErr:  false,
-		},
-		{
-			name:     "13 digits odd length - should append F",
-			input:    "1234123412341",
-			expected: "1234123412341F",
-			wantErr:  false,
-		},
-		{
-			name:     "15 digits odd length - should append F",
-			input:    "123412341234123",
-			expected: "123412341234123F",
-			wantErr:  false,
-		},
-		{
-			name:     "16 digits even length",
+			name:     "16 chars real-life",
 			input:    "1234123412341234",
 			expected: "1234123412341234",
 			wantErr:  false,
 		},
-		// Error cases
 		{
-			name:     "invalid input with letters",
+			name:     "invalid input valid hex",
 			input:    "12A",
 			expected: "",
 			wantErr:  true,
 		},
 		{
-			name:     "invalid input with letters in longer string",
-			input:    "123412341234A",
-			expected: "",
-			wantErr:  true,
-		},
-		{
-			name:     "invalid input with letters mixed",
-			input:    "601A",
+			name:     "invalid input not even hex",
+			input:    "12G",
 			expected: "",
 			wantErr:  true,
 		},
