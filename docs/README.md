@@ -35,12 +35,7 @@ GitHub Pages is automatically deployed via GitHub Actions when changes are pushe
 
 ### Preview Deployments
 
-Pull requests with changes to the documentation automatically generate preview deployments:
-
-1. **GitHub Preview**: Creates a temporary branch with preview via HTMLPreview service
-2. **Netlify Preview** (optional): Requires `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` secrets
-
-Preview URLs are automatically posted as comments on pull requests.
+Pull requests with changes to the documentation automatically generate preview deployments with preview URLs posted as comments on pull requests.
 
 ### Manual Setup (if needed)
 
