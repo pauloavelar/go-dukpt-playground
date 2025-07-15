@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPANToBCD(t *testing.T) {
+func TestNumericToRightPaddedBCD_PAN(t *testing.T) {
 	tests := []struct {
 		name     string
 		pan      string
@@ -49,13 +49,13 @@ func TestPANToBCD(t *testing.T) {
 			name:     "empty PAN",
 			pan:      "",
 			expected: "",
-			wantErr:  true, // empty PAN should be invalid
+			wantErr:  false, // NumericToRightPaddedBCD handles empty input
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := PANToBCD(tt.pan)
+			result, err := NumericToRightPaddedBCD(tt.pan)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -68,7 +68,7 @@ func TestPANToBCD(t *testing.T) {
 	}
 }
 
-func TestServiceDataToBCD(t *testing.T) {
+func TestNumericToRightPaddedBCD_ServiceData(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -115,7 +115,7 @@ func TestServiceDataToBCD(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ServiceDataToBCD(tt.input)
+			result, err := NumericToRightPaddedBCD(tt.input)
 
 			if tt.wantErr {
 				require.Error(t, err)

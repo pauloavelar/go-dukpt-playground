@@ -66,23 +66,6 @@ func NumericToRightPaddedBCD(input string) ([]byte, error) {
 	return bcd, nil
 }
 
-// PANToBCD converts a PAN (Primary Account Number) string to BCD bytes.
-// According to ISO/IEC 7813, if the PAN has an odd number of digits,
-// a padding digit 'F' is appended to the end before BCD encoding.
-func PANToBCD(pan string) ([]byte, error) {
-	if len(pan) == 0 {
-		return nil, fmt.Errorf("invalid PAN: %s", pan)
-	}
-	return NumericToRightPaddedBCD(pan)
-}
-
-// ServiceDataToBCD converts service code and discretionary data to BCD bytes.
-// Similar to PAN encoding, if the combined string has an odd number of digits,
-// a padding digit 'F' is appended to the end before BCD encoding.
-func ServiceDataToBCD(serviceData string) ([]byte, error) {
-	return NumericToRightPaddedBCD(serviceData)
-}
-
 // IntegerToBCD converts any int-based number to BCD.
 func IntegerToBCD[T constraints.Integer](n T) []byte {
 	str := fmt.Sprintf("%02d", n)

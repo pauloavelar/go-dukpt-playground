@@ -139,3 +139,17 @@ func TestData_FormatAlt_PANPadding(t *testing.T) {
 
 	require.True(t, strings.HasPrefix(resultHex, expectedStart))
 }
+
+func TestData_FormatISO_EmptyPAN(t *testing.T) {
+	data := &Data{
+		PAN:               "", // empty PAN should be invalid
+		ExpYear:           2025,
+		ExpMonth:          12,
+		ServiceCode:       "601",
+		DiscretionaryData: "123",
+	}
+
+	_, err := data.FormatISO()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid PAN")
+}
