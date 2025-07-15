@@ -119,10 +119,8 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <h6 class="card-title">Mathematical Representation:</h6>
-                            <code class="d-block">IPEK_Left = 3DES_Encrypt(Masked_KSN, BDK)</code>
-                            <code class="d-block">IPEK_Right = 3DES_Encrypt(Masked_KSN, Masked_BDK)</code>
-                            <code class="d-block">IPEK = IPEK_Left || IPEK_Right</code>
+                            <h6 class="card-title">Mathematical Foundation:</h6>
+                            <p class="mb-0">IPEK derivation uses 3DES encryption with masked values from the KSN and BDK.</p>
                         </div>
                     </div>
 
@@ -154,13 +152,8 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <h6 class="card-title">NRKGP Algorithm Details:</h6>
-                            <pre class="mb-0"><code>For bit_position in transaction_counter:
-  if bit is set:
-    ksn_reg = build_ksn_register(ksi, bit_position)
-    session_key = nrkgp(session_key, ksn_reg)
-
-session_key = apply_data_mask(session_key)</code></pre>
+                            <h6 class="card-title">NRKGP Algorithm:</h6>
+                            <p class="mb-0">The Non-Reversible Key Generation Process iterates through transaction counter bits to derive unique session keys.</p>
                         </div>
                     </div>
 
@@ -192,20 +185,13 @@ session_key = apply_data_mask(session_key)</code></pre>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <h6 class="card-title">Track2 Format Example:</h6>
-                            <small class="text-muted d-block">Input: PAN=1234123412341234, Exp=12/25, SC=601, DD=123123</small>
-                            <code class="d-block">Format: ;1234123412341234=251206011231233?</code>
-                            <code class="d-block">BCD: 3B12341234123412343D251206011231233F</code>
-                            <code class="d-block">Padded: 3B12341234123412343D251206011231233F0000</code>
-                            <code class="d-block">Final: B04B8CB78C7F5186981EF46D2D79B83F0000</code>
+                            <h6 class="card-title">Track2 Format:</h6>
+                            <p class="mb-0">Track2 data contains payment card information formatted according to ISO/IEC 7813 standard.</p>
                         </div>
                     </div>
 
                     <h3 class="mt-4">Track2 Format</h3>
-                    <p>Track2 data follows ISO/IEC 7813 format:</p>
-                    <div class="bg-light p-3 rounded mb-3">
-                        <code>;PAN=YYMM[ServiceCode][DiscretionaryData]?</code>
-                    </div>
+                    <p>Track2 data follows ISO/IEC 7813 format with specific field separators and data organization.</p>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>;</strong> - Start sentinel</li>
                         <li class="list-group-item"><strong>PAN</strong> - Primary Account Number (card number)</li>
@@ -223,98 +209,8 @@ session_key = apply_data_mask(session_key)</code></pre>
             <div class="row">
                 <div class="col-12">
                     <h2 class="border-bottom border-primary pb-2 mb-4">Practical Examples</h2>
-                    <p>Here are real examples from the Go implementation:</p>
+                    <p>This section will contain practical examples of DUKPT implementation. Relevant code snippets will be added to the README.</p>
 
-                    <h3 class="mt-4">Example Transaction</h3>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Input Parameters:</h5>
-                        </div>
-                        <div class="card-body">
-                            <pre class="mb-0"><code>BDK: 0123456789ABCDEFFEDCBA9876543210
-KSN: 12345678901234567890
-
-Track2 Data:
-  PAN: 1234123412341234
-  Expiry: 12/2025
-  Service Code: 601
-  Discretionary Data: 123123</code></pre>
-                        </div>
-                    </div>
-
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Process:</h5>
-                        </div>
-                        <div class="card-body">
-                            <pre class="mb-0"><code>1. Formatted Track2: 3B12341234123412343D251206011231233F
-2. IPEK Derivation: [derived from BDK + masked KSN]
-3. Session Key: [derived using NRKGP process]
-4. Encrypted Result: B04B8CB78C7F5186981EF46D2D79B83F0000</code></pre>
-                        </div>
-                    </div>
-
-                    <h3 class="mt-4">Code Usage</h3>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Go Implementation Example</h5>
-                        </div>
-                        <div class="card-body">
-                            <pre class="mb-0"><code>// Go implementation example
-package main
-
-import (
-    "encoding/hex"
-    "github.com/pauloavelar/go-dukpt-playground/dukpt"
-    "github.com/pauloavelar/go-dukpt-playground/track2"
-)
-
-func main() {
-    // Define test keys
-    bdk := mustDecodeHex("0123456789ABCDEFFEDCBA9876543210")
-    ksn := mustDecodeHex("12345678901234567890")
-    
-    // Create track2 data
-    t2 := track2.Data{
-        PAN:               "1234123412341234",
-        ExpYear:           2025,
-        ExpMonth:          12,
-        ServiceCode:       "601",
-        DiscretionaryData: "123123",
-    }
-    
-    // Format and encrypt
-    formatted, err := t2.FormatISO()
-    if err != nil {
-        panic(err)
-    }
-    
-    encrypted, err := dukpt.EncryptTrack2(formatted, bdk, ksn)
-    if err != nil {
-        panic(err)
-    }
-    
-    fmt.Printf("Encrypted: %s\n", hex.EncodeToString(encrypted))
-}</code></pre>
-                        </div>
-                    </div>
-
-                    <h3 class="mt-4">Key Derivation Examples</h3>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">IPEK Derivation Steps:</h5>
-                        </div>
-                        <div class="card-body">
-                            <pre class="mb-0"><code>Original KSN: 12345678901234567890
-Masked KSN:   123456789012345678E0  (last 5 bits cleared)
-BDK Mask:     C0C0C0C000000000C0C0C0C000000000
-Masked BDK:   C1E396C589ABCDEFFE1C7AC876543210
-
-Left Half:  3DES_Encrypt(Masked_KSN, Original_BDK)
-Right Half: 3DES_Encrypt(Masked_KSN, Masked_BDK)
-IPEK:       Left_Half || Right_Half</code></pre>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
