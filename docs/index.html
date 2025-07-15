@@ -45,14 +45,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="key-theory.html">Key Theory</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#overview">Overview</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Implementation
+                            In Theory
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="key-theory.html#key-hierarchy">Key Hierarchy</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#bdk">BDK - Base Derivation Key</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#ipek">IPEK - Initial PIN Encryption Key</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#security-principles">Security Principles</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Practice
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#workflow">Workflow</a></li>
@@ -417,7 +426,7 @@ IPEK:       Left_Half || Right_Half</code></pre>
             <p class="mb-2">&copy; 2025 Paulo Avelar. Educational implementation of DUKPT key management.</p>
             <p class="mb-0">
                 <a href="https://github.com/pauloavelar/go-dukpt-playground" class="link-primary">View on GitHub</a> |
-                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">License</a>
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">MIT License</a>
             </p>
         </div>
     </footer>

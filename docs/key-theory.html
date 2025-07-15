@@ -45,14 +45,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="key-theory.html">Key Theory</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Overview</a>
+                        <a class="nav-link" href="index.html#overview">Overview</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Implementation
+                            In Theory
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#key-hierarchy">Key Hierarchy</a></li>
+                            <li><a class="dropdown-item" href="#bdk">BDK - Base Derivation Key</a></li>
+                            <li><a class="dropdown-item" href="#ipek">IPEK - Initial PIN Encryption Key</a></li>
+                            <li><a class="dropdown-item" href="#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="#security-principles">Security Principles</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Practice
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="index.html#workflow">Workflow</a></li>
@@ -83,7 +92,7 @@
         <section id="key-hierarchy" class="mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="border-bottom border-primary pb-2 mb-4">Key Hierarchy Overview</h2>
+                    <h2 id="key-hierarchy" class="border-bottom border-primary pb-2 mb-4">Key Hierarchy Overview</h2>
                     <p>
                         DUKPT employs a hierarchical key structure where each level serves a specific security purpose.
                         The hierarchy is designed with <strong>forward secrecy</strong> and <strong>non-reversibility</strong> 
@@ -133,7 +142,7 @@ graph TD
         <section id="bdk-purpose" class="mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="border-bottom border-primary pb-2 mb-4">BDK - Base Derivation Key</h2>
+                    <h2 id="bdk" class="border-bottom border-primary pb-2 mb-4">BDK - Base Derivation Key</h2>
                     
                     <div class="row">
                         <div class="col-lg-8">
@@ -191,7 +200,7 @@ graph TD
         <section id="ipek-purpose" class="mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="border-bottom border-primary pb-2 mb-4">IPEK - Initial PIN Encryption Key</h2>
+                    <h2 id="ipek" class="border-bottom border-primary pb-2 mb-4">IPEK - Initial PIN Encryption Key</h2>
                     
                     <div class="row">
                         <div class="col-lg-8">
@@ -249,7 +258,7 @@ graph TD
         <section id="session-purpose" class="mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="border-bottom border-primary pb-2 mb-4">Session Keys - Transaction-Specific Keys</h2>
+                    <h2 id="session-keys" class="border-bottom border-primary pb-2 mb-4">Session Keys - Transaction-Specific Keys</h2>
                     
                     <div class="row">
                         <div class="col-lg-8">
@@ -308,7 +317,7 @@ graph TD
         <section id="security-principles" class="mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="border-bottom border-primary pb-2 mb-4">Core Security Principles</h2>
+                    <h2 id="security-principles" class="border-bottom border-primary pb-2 mb-4">Core Security Principles</h2>
                     
                     <div class="row">
                         <div class="col-lg-6">
@@ -473,7 +482,7 @@ graph LR
             <p class="mb-2">&copy; 2025 Paulo Avelar. Educational implementation of DUKPT key management.</p>
             <p class="mb-0">
                 <a href="https://github.com/pauloavelar/go-dukpt-playground" class="link-primary">View on GitHub</a> |
-                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">License</a>
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">MIT License</a>
             </p>
         </div>
     </footer>
