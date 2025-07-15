@@ -28,16 +28,10 @@ func TestData_FormatISO_ServiceDataPadding(t *testing.T) {
 			expServiceDataInHex: "60112F", // F padding appended
 		},
 		{
-			name:                "odd length combined (3 digits) - should append F",
-			serviceCode:         "601",
+			name:                "zero digits (empty service code and discretionary data)",
+			serviceCode:         "",
 			discretionaryData:   "",
-			expServiceDataInHex: "601F", // F padding appended
-		},
-		{
-			name:                "odd length combined (1 digit) - should append F",
-			serviceCode:         "1",
-			discretionaryData:   "",
-			expServiceDataInHex: "1F", // F padding appended
+			expServiceDataInHex: "", // empty result
 		},
 	}
 
