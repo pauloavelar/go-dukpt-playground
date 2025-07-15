@@ -1,0 +1,23 @@
+graph TD
+    HSM[Hardware Security Module<br/>Secure Environment]
+    BDK[BDK - Base Derivation Key<br/>🔐 Master Root Key<br/>Never leaves HSM]
+    
+    HSM --> BDK
+    
+    BDK --> IPEK1[IPEK - Device 1<br/>🔑 Initial PIN Encryption Key<br/>Device-specific master key]
+    BDK --> IPEK2[IPEK - Device 2<br/>🔑 Initial PIN Encryption Key<br/>Device-specific master key]
+    BDK --> IPEK3[IPEK - Device N<br/>🔑 Initial PIN Encryption Key<br/>Device-specific master key]
+    
+    IPEK1 --> SK1[Session Key 1<br/>🗝️ Transaction-specific key<br/>Derived per transaction]
+    IPEK1 --> SK2[Session Key 2<br/>🗝️ Transaction-specific key<br/>Next transaction]
+    IPEK1 --> SK3[Session Key N<br/>🗝️ Transaction-specific key<br/>Future transactions]
+    
+    classDef hsmClass fill:#d32f2f,color:#fff
+    classDef bdkClass fill:#f57c00,color:#fff
+    classDef ipekClass fill:#388e3c,color:#fff
+    classDef sessionClass fill:#1976d2,color:#fff
+    
+    class HSM hsmClass
+    class BDK bdkClass
+    class IPEK1,IPEK2,IPEK3 ipekClass
+    class SK1,SK2,SK3 sessionClass
