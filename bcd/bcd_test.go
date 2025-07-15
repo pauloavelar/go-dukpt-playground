@@ -62,7 +62,7 @@ func TestNumericToRightPaddedBCD(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				resultHex := strings.ToUpper(hex.EncodeToString(result))
-				require.Equal(t, strings.ToUpper(tt.expected), resultHex)
+				require.Equal(t, tt.expected, resultHex)
 			}
 		})
 	}
