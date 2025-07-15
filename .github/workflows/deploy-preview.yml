@@ -1,0 +1,169 @@
+name: Deploy PR Preview
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths: [ 'docs/**' ]
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment:
+      name: pr-preview-${{ github.event.number }}
+      url: https://raw.githubusercontent.com/${{ github.repository }}/pr-preview-${{ github.event.number }}/docs/index.html
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Create preview branch
+        run: |
+          # Create and switch to preview branch
+          git checkout -b pr-preview-${{ github.event.number }}
+          
+          # Copy docs to ensure clean state
+          git add docs/
+          
+          # Commit if there are any changes
+          if ! git diff --staged --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Preview for PR #${{ github.event.number }}"
+          fi
+          
+          # Push to preview branch (will overwrite if exists)
+          git push origin pr-preview-${{ github.event.number }} --force
+
+      - name: Create deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `pr-preview-${{ github.event.number }}`,
+              environment: `pr-preview-${{ github.event.number }}`,
+              description: `Preview for PR #${{ github.event.number }}`,
+              auto_merge: false,
+              required_contexts: []
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              environment_url: `https://htmlpreview.github.io/?https://github.com/${{ github.repository }}/blob/pr-preview-${{ github.event.number }}/docs/index.html`,
+              description: 'Preview deployment successful'
+            });
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('📖 Documentation Preview')
+            );
+
+            const previewUrl = `https://htmlpreview.github.io/?https://github.com/${{ github.repository }}/blob/pr-preview-${{ github.event.number }}/docs/index.html`;
+            const rawUrl = `https://raw.githubusercontent.com/${{ github.repository }}/pr-preview-${{ github.event.number }}/docs/index.html`;
+
+            const body = `📖 **Documentation Preview**
+
+            Your documentation changes are available for preview:
+
+            🔗 **Preview URL:** [${previewUrl}](${previewUrl})
+            📄 **Raw Files:** [View on GitHub](https://github.com/${{ github.repository }}/tree/pr-preview-${{ github.event.number }}/docs)
+
+            This preview will be updated automatically when you push new commits to this PR.
+
+            > **Note:** The preview uses GitHub's HTMLPreview service for immediate access. Some external resources may have CORS limitations.`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+  cleanup-preview:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete preview branch
+        run: |
+          # Delete the preview branch
+          git push origin --delete pr-preview-${{ github.event.number }} || echo "Branch already deleted"
+
+      - name: Cleanup deployments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              // Get all deployments for this environment
+              const deployments = await github.rest.repos.listDeployments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                environment: `pr-preview-${{ github.event.number }}`
+              });
+
+              // Set all deployments to inactive
+              for (const deployment of deployments.data) {
+                await github.rest.repos.createDeploymentStatus({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  deployment_id: deployment.id,
+                  state: 'inactive'
+                });
+              }
+
+              console.log(`Cleaned up deployments for pr-preview-${{ github.event.number }}`);
+            } catch (error) {
+              console.log('Error cleaning up deployments:', error.message);
+            }
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `📖 **Documentation Preview Cleanup**
+
+            The preview environment for this PR has been cleaned up.
+
+            Preview branch \`pr-preview-${{ github.event.number }}\` has been deleted.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });

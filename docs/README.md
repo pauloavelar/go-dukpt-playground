@@ -29,12 +29,26 @@ The documentation uses **Mermaid.js diagrams** loaded from an external CDN for p
 
 ## Setup for GitHub Pages
 
-To enable GitHub Pages for this documentation:
+### Automatic Deployment
 
-1. Go to repository **Settings → Pages**
-2. Set source to **"Deploy from a branch"**
-3. Select `main` branch and `/docs` folder
-4. Documentation will be available at `https://pauloavelar.github.io/go-dukpt-playground/`
+GitHub Pages is automatically deployed via GitHub Actions when changes are pushed to the `main` branch. The documentation is available at `https://pauloavelar.github.io/go-dukpt-playground/`.
+
+### Preview Deployments
+
+Pull requests with changes to the documentation automatically generate preview deployments:
+
+1. **GitHub Preview**: Creates a temporary branch with preview via HTMLPreview service
+2. **Netlify Preview** (optional): Requires `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` secrets
+
+Preview URLs are automatically posted as comments on pull requests.
+
+### Manual Setup (if needed)
+
+To manually enable GitHub Pages:
+
+1. Go to repository **Settings → Pages**  
+2. Set source to **"GitHub Actions"**
+3. The deployment workflow will handle the rest
 
 ## Technical Details
 
