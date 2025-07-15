@@ -8,54 +8,54 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPANToBCD(t *testing.T) {
+func TestNumericToRightPaddedBCD(t *testing.T) {
 	tests := []struct {
 		name     string
-		pan      string
+		input    string
 		expected string // hex representation of expected BCD
 		wantErr  bool
 	}{
 		{
-			name:     "even length PAN (16 digits)",
-			pan:      "1234123412341234",
+			name:     "empty input",
+			input:    "",
+			expected: "",
+			wantErr:  false,
+		},
+		{
+			name:     "odd length - should append F",
+			input:    "5",
+			expected: "5F",
+			wantErr:  false,
+		},
+		{
+			name:     "even length",
+			input:    "12",
+			expected: "12",
+			wantErr:  false,
+		},
+		{
+			name:     "16 chars real-life",
+			input:    "1234123412341234",
 			expected: "1234123412341234",
 			wantErr:  false,
 		},
 		{
-			name:     "odd length PAN (15 digits) - should append F",
-			pan:      "123412341234123",
-			expected: "123412341234123F",
-			wantErr:  false,
-		},
-		{
-			name:     "odd length PAN (13 digits) - should append F",
-			pan:      "1234123412341",
-			expected: "1234123412341F",
-			wantErr:  false,
-		},
-		{
-			name:     "odd length PAN (1 digit) - should append F",
-			pan:      "1",
-			expected: "1F",
-			wantErr:  false,
-		},
-		{
-			name:     "invalid PAN with letters",
-			pan:      "123412341234A",
+			name:     "invalid input valid hex",
+			input:    "12A",
 			expected: "",
 			wantErr:  true,
 		},
 		{
-			name:     "empty PAN",
-			pan:      "",
+			name:     "invalid input not even hex",
+			input:    "12G",
 			expected: "",
-			wantErr:  true, // empty PAN should be invalid
+			wantErr:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := PANToBCD(tt.pan)
+			result, err := NumericToRightPaddedBCD(tt.input)
 
 			if tt.wantErr {
 				require.Error(t, err)

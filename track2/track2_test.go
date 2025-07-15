@@ -8,6 +8,60 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestData_FormatISO_ServiceDataPadding(t *testing.T) {
+	tests := []struct {
+		name                string
+		serviceCode         string
+		discretionaryData   string
+		expServiceDataInHex string // expected service+discretionary portion in hex
+	}{
+		{
+			name:                "even length combined (6 digits)",
+			serviceCode:         "601",
+			discretionaryData:   "123",
+			expServiceDataInHex: "601123", // no padding needed
+		},
+		{
+			name:                "odd length combined (5 digits) - should append F",
+			serviceCode:         "601",
+			discretionaryData:   "12",
+			expServiceDataInHex: "60112F", // F padding appended
+		},
+		{
+			name:                "zero digits (empty service code and discretionary data)",
+			serviceCode:         "",
+			discretionaryData:   "",
+			expServiceDataInHex: "", // empty result
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := &Data{
+				PAN:               "1234123412341234", // 16 digits (even)
+				ExpYear:           2025,
+				ExpMonth:          12,
+				ServiceCode:       tt.serviceCode,
+				DiscretionaryData: tt.discretionaryData,
+			}
+
+			result, err := data.FormatISO()
+			require.NoError(t, err)
+
+			resultHex := strings.ToUpper(hex.EncodeToString(result))
+
+			// Extract the service data portion
+			// Structure: 3B + PAN(16) + 3D + 25 + 12 + ServiceData + 3F
+			// PAN is 16 hex chars, so service data starts at position 2+16+2+2+2 = 24
+			serviceDataStart := 24
+			serviceDataEnd := len(resultHex) - 2 // exclude the end sentinel (3F)
+			actualServiceDataHex := resultHex[serviceDataStart:serviceDataEnd]
+
+			require.Equal(t, tt.expServiceDataInHex, actualServiceDataHex)
+		})
+	}
+}
+
 func TestData_FormatISO_PANPadding(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -78,4 +132,18 @@ func TestData_FormatAlt_PANPadding(t *testing.T) {
 	expectedStart := "3B123412341234123F"
 
 	require.True(t, strings.HasPrefix(resultHex, expectedStart))
+}
+
+func TestData_FormatISO_EmptyPAN(t *testing.T) {
+	data := &Data{
+		PAN:               "", // empty PAN should be invalid
+		ExpYear:           2025,
+		ExpMonth:          12,
+		ServiceCode:       "601",
+		DiscretionaryData: "123",
+	}
+
+	_, err := data.FormatISO()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid PAN")
 }

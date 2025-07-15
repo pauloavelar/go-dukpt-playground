@@ -1,6 +1,8 @@
 package track2
 
 import (
+	"fmt"
+
 	"github.com/pauloavelar/go-dukpt-playground/bcd"
 )
 
@@ -32,12 +34,17 @@ func (d *Data) FormatAlt() ([]byte, error) {
 }
 
 func (d *Data) formatTrack2(sep rune) ([]byte, error) {
-	pan, err := bcd.PANToBCD(d.PAN)
+	// Validate PAN is not empty
+	if len(d.PAN) == 0 {
+		return nil, fmt.Errorf("invalid PAN: %s", d.PAN)
+	}
+
+	pan, err := bcd.NumericToRightPaddedBCD(d.PAN)
 	if err != nil {
 		return nil, err
 	}
 
-	etc, err := bcd.StringToBCD(d.ServiceCode + d.DiscretionaryData)
+	etc, err := bcd.NumericToRightPaddedBCD(d.ServiceCode + d.DiscretionaryData)
 	if err != nil {
 		return nil, err
 	}
@@ -60,5 +67,5 @@ func (d *Data) formatTrack2(sep rune) ([]byte, error) {
 }
 
 func (d *Data) byteLen() int {
-	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode) + bcd.ByteLen(d.DiscretionaryData)
+	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode+d.DiscretionaryData)
 }
