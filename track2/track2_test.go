@@ -57,7 +57,7 @@ func TestData_FormatISO_ServiceDataPadding(t *testing.T) {
 			serviceDataEnd := len(resultHex) - 2 // exclude the end sentinel (3F)
 			actualServiceDataHex := resultHex[serviceDataStart:serviceDataEnd]
 
-			require.Equal(t, strings.ToUpper(tt.expServiceDataInHex), actualServiceDataHex)
+			require.Equal(t, tt.expServiceDataInHex, actualServiceDataHex)
 		})
 	}
 }
