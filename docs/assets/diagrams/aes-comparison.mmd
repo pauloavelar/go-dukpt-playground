@@ -1,0 +1,44 @@
+%% AES vs DES/3DES Comparison Diagram
+%% Shows the differences between encryption algorithms in DUKPT context
+graph TB
+    subgraph DES ["DES/3DES (Current DUKPT Standard)"]
+        D1["DES: 56-bit key"]
+        D2["3DES: 112/168-bit effective"]
+        D3["Block size: 64 bits"]
+        D4["Established since 1970s"]
+        D5["ANSI X9.24 compliant"]
+        D6["Slower performance"]
+        D7["Smaller key space"]
+    end
+    
+    subgraph AES ["AES (Modern Alternative)"]
+        A1["AES: 128/192/256-bit key"]
+        A2["Block size: 128 bits"]
+        A3["Established since 2001"]
+        A4["FIPS 197 standard"]
+        A5["Faster performance"]
+        A6["Larger key space"]
+        A7["Hardware acceleration"]
+    end
+    
+    subgraph IMPACT ["Impact on DUKPT"]
+        I1["Key derivation algorithm changes"]
+        I2["Session key size changes"]
+        I3["Compatibility concerns"]
+        I4["Performance improvements"]
+        I5["Enhanced security margins"]
+    end
+    
+    DES -.-> I1
+    DES -.-> I3
+    AES -.-> I1
+    AES -.-> I4
+    AES -.-> I5
+    
+    classDef desStyle fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+    classDef aesStyle fill:#ccffcc,stroke:#009900,stroke-width:2px
+    classDef impactStyle fill:#ffffcc,stroke:#cc9900,stroke-width:2px
+    
+    class D1,D2,D3,D4,D5,D6,D7 desStyle
+    class A1,A2,A3,A4,A5,A6,A7 aesStyle
+    class I1,I2,I3,I4,I5 impactStyle

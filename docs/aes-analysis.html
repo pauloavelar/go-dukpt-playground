@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES vs DES/3DES Analysis - DUKPT Playground</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="assets/js/diagram-loader.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary sticky-top" data-bs-theme="dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">DUKPT Playground</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Theory
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="key-theory.html#key-hierarchy">Key Hierarchy</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#bdk">BDK - Base Derivation Key</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#ipek">IPEK - Initial PIN Encryption Key</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="key-theory.html#security-principles">Security Principles</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            In Practice
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="index.html#overview">Overview</a></li>
+                            <li><a class="dropdown-item" href="index.html#workflow">Workflow</a></li>
+                            <li><a class="dropdown-item" href="index.html#ipek">IPEK Derivation</a></li>
+                            <li><a class="dropdown-item" href="index.html#session-keys">Session Keys</a></li>
+                            <li><a class="dropdown-item" href="index.html#encryption">Data Encryption</a></li>
+                            <li><a class="dropdown-item" href="index.html#examples">Examples</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Specifics
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#overview">Compatibility with AES</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <section id="overview" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="border-bottom border-primary pb-2 mb-4">Compatibility with AES: Impact Analysis</h1>
+                    <p class="lead">
+                        Analyzing the impact of migrating DUKPT from DES/3DES to AES encryption, 
+                        including compatibility considerations, performance implications, and security benefits.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="algorithm-comparison" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Algorithm Comparison</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mermaid" data-source="aes-comparison">
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <h6 class="card-title">Key Differences:</h6>
+                            <p class="mb-0">AES offers superior performance and security compared to DES/3DES, but requires significant changes to DUKPT implementations.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h3>🔐 DES/3DES (Current Standard)</h3>
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>Key Size:</strong> DES: 56-bit, 3DES: 112/168-bit effective</li>
+                                        <li class="list-group-item"><strong>Block Size:</strong> 64 bits</li>
+                                        <li class="list-group-item"><strong>Performance:</strong> Slower, especially in software</li>
+                                        <li class="list-group-item"><strong>Security:</strong> DES is deprecated, 3DES has limited lifetime</li>
+                                        <li class="list-group-item"><strong>Standards:</strong> ANSI X9.24-1:2017 compliant</li>
+                                        <li class="list-group-item"><strong>Compatibility:</strong> Universal support in legacy systems</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h3>🔒 AES (Modern Alternative)</h3>
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>Key Size:</strong> 128, 192, or 256 bits</li>
+                                        <li class="list-group-item"><strong>Block Size:</strong> 128 bits</li>
+                                        <li class="list-group-item"><strong>Performance:</strong> Faster, especially with hardware acceleration</li>
+                                        <li class="list-group-item"><strong>Security:</strong> Strong security margins, recommended by NIST</li>
+                                        <li class="list-group-item"><strong>Standards:</strong> FIPS 197, widely adopted</li>
+                                        <li class="list-group-item"><strong>Compatibility:</strong> Requires updated implementations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="performance-impact" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Performance Impact</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h3>📊 Performance Characteristics</h3>
+                            <p>
+                                AES generally provides better performance than 3DES, especially in modern hardware 
+                                environments with dedicated AES instruction sets (AES-NI).
+                            </p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th>DES</th>
+                                            <th>3DES</th>
+                                            <th>AES-128</th>
+                                            <th>AES-256</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Key Length</strong></td>
+                                            <td>56 bits</td>
+                                            <td>112/168 bits</td>
+                                            <td>128 bits</td>
+                                            <td>256 bits</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Block Size</strong></td>
+                                            <td>64 bits</td>
+                                            <td>64 bits</td>
+                                            <td>128 bits</td>
+                                            <td>128 bits</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Rounds</strong></td>
+                                            <td>16</td>
+                                            <td>48 (3×16)</td>
+                                            <td>10</td>
+                                            <td>14</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Relative Speed</strong></td>
+                                            <td>3x</td>
+                                            <td>1x (baseline)</td>
+                                            <td>4-6x faster</td>
+                                            <td>3-4x faster</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card bg-info text-white">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">⚡ Performance Benefits</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text mb-2">
+                                        <strong>Hardware Acceleration</strong>
+                                    </p>
+                                    <p class="card-text mb-0 small">
+                                        Modern processors include AES-NI instructions that can 
+                                        accelerate AES operations by 3-5x compared to software implementation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="security-analysis" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Security Analysis</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h3>🛡️ Security Strengths</h3>
+                            <div class="card border-success">
+                                <div class="card-header">
+                                    <strong>AES Security Advantages</strong>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">
+                                            <strong>Larger Key Space:</strong> 2^128 vs 2^112 for 3DES
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Block Size:</strong> 128-bit blocks reduce collision probability
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Algorithm Design:</strong> More resistant to differential cryptanalysis
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Standards Endorsement:</strong> Recommended by NIST, NSA approved
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Future-Proof:</strong> No known practical attacks against full AES
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h3>⚠️ Security Concerns</h3>
+                            <div class="card border-warning">
+                                <div class="card-header">
+                                    <strong>DES/3DES Limitations</strong>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">
+                                            <strong>DES Deprecation:</strong> Officially deprecated by NIST since 2005
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>3DES Timeline:</strong> Deprecated for new applications after 2023
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Small Block Size:</strong> 64-bit blocks vulnerable to birthday attacks
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Performance:</strong> Slower operations increase attack windows
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Compliance:</strong> May not meet future regulatory requirements
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="compatibility-impact" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Compatibility Impact</h2>
+                    
+                    <h3>🔄 Migration Challenges</h3>
+                    <p>
+                        Migrating DUKPT from DES/3DES to AES involves significant changes that affect 
+                        compatibility across the payment processing ecosystem.
+                    </p>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h4>📚 Standards and Specifications</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Current Standards (DES/3DES)</h6>
+                                    <ul class="list-unstyled">
+                                        <li>• ANSI X9.24-1:2017 - Retail Key Management</li>
+                                        <li>• ANSI X9.24-3:2017 - Key Agreement and Key Transport</li>
+                                        <li>• ISO 11568 - Key Management (retail)</li>
+                                        <li>• PCI-PTS standards for PIN acceptance devices</li>
+                                    </ul>
+                                    
+                                    <h6 class="card-title mt-3">Required Updates for AES</h6>
+                                    <ul class="list-unstyled text-warning">
+                                        <li>• New ANSI standards development</li>
+                                        <li>• Updated PCI-PTS requirements</li>
+                                        <li>• Modified key derivation functions</li>
+                                        <li>• Different block cipher modes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h4>🏗️ Implementation Changes</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Core Algorithm Changes</h6>
+                                    <ul class="list-unstyled">
+                                        <li>• Key derivation functions (KDF)</li>
+                                        <li>• Session key generation</li>
+                                        <li>• Data encryption/decryption</li>
+                                        <li>• Key wrapping mechanisms</li>
+                                    </ul>
+                                    
+                                    <h6 class="card-title mt-3">System Components Affected</h6>
+                                    <ul class="list-unstyled text-danger">
+                                        <li>• Point-of-sale terminals</li>
+                                        <li>• Payment processors</li>
+                                        <li>• Hardware Security Modules (HSMs)</li>
+                                        <li>• Key management systems</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="migration-strategy" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Migration Strategy</h2>
+                    
+                    <h3>🎯 Recommended Approach</h3>
+                    <p>
+                        A successful migration to AES-based DUKPT requires careful planning and phased implementation 
+                        to maintain backward compatibility during the transition period.
+                    </p>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">Phase 1: Standards Development</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">Define AES-DUKPT specifications</li>
+                                        <li class="list-group-item">Update ANSI X9.24 standards</li>
+                                        <li class="list-group-item">Create test vectors</li>
+                                        <li class="list-group-item">Establish certification requirements</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="card-title mb-0">Phase 2: Dual-Mode Implementation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">Develop hybrid systems</li>
+                                        <li class="list-group-item">Support both algorithms</li>
+                                        <li class="list-group-item">Algorithm negotiation</li>
+                                        <li class="list-group-item">Extensive testing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">Phase 3: Full Migration</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">Gradual rollout</li>
+                                        <li class="list-group-item">Monitor performance</li>
+                                        <li class="list-group-item">Address compatibility issues</li>
+                                        <li class="list-group-item">Deprecate 3DES support</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Recommendations</h2>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h3>✅ Key Recommendations</h3>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">1. Gradual Migration Strategy</h5>
+                                    <p class="card-text">
+                                        Implement AES support alongside existing 3DES infrastructure to ensure 
+                                        backward compatibility during the transition period.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">2. Standards-First Approach</h5>
+                                    <p class="card-text">
+                                        Wait for or actively participate in the development of AES-DUKPT standards 
+                                        before implementing production systems.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">3. Performance Testing</h5>
+                                    <p class="card-text">
+                                        Conduct thorough performance testing to validate the expected improvements 
+                                        in your specific hardware and software environment.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">4. Security Assessment</h5>
+                                    <p class="card-text">
+                                        Perform comprehensive security analysis to ensure AES implementation 
+                                        maintains or improves upon current security properties.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">📋 Migration Checklist</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check1" disabled>
+                                        <label class="form-check-label" for="check1">
+                                            Standards compliance verification
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check2" disabled>
+                                        <label class="form-check-label" for="check2">
+                                            Algorithm interoperability testing
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check3" disabled>
+                                        <label class="form-check-label" for="check3">
+                                            Performance benchmarking
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check4" disabled>
+                                        <label class="form-check-label" for="check4">
+                                            Security audit completion
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check5" disabled>
+                                        <label class="form-check-label" for="check5">
+                                            Backward compatibility validation
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="check6" disabled>
+                                        <label class="form-check-label" for="check6">
+                                            Staff training and documentation
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="border-bottom border-primary pb-2 mb-4">Conclusion</h2>
+                    
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h4 class="card-title">Summary</h4>
+                            <p class="card-text">
+                                Migrating DUKPT from DES/3DES to AES offers significant security and performance benefits, 
+                                but requires careful consideration of compatibility and standards compliance. A phased 
+                                approach with dual-algorithm support during transition is recommended.
+                            </p>
+                            
+                            <h5 class="mt-3">Key Benefits:</h5>
+                            <ul class="mb-0">
+                                <li>Enhanced security with larger key sizes and block sizes</li>
+                                <li>Improved performance, especially with hardware acceleration</li>
+                                <li>Future compliance with evolving cryptographic standards</li>
+                                <li>Better alignment with modern cryptographic best practices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-body-tertiary text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-2">&copy; 2025 Paulo Avelar. Educational implementation of DUKPT key management.</p>
+            <p class="mb-0">
+                <a href="https://github.com/pauloavelar/go-dukpt-playground" class="link-primary">View on GitHub</a> |
+                <a href="https://github.com/pauloavelar/go-dukpt-playground/blob/main/LICENSE" class="link-primary">MIT License</a>
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
