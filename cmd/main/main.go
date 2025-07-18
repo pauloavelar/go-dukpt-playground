@@ -17,24 +17,30 @@ var (
 func main() {
 	t2 := track2.Data{
 		PAN:               "1234123412341234",
-		ExpYear:           2025,
-		ExpMonth:          12,
+		ExpYear:           "25",
+		ExpMonth:          "12",
 		ServiceCode:       "601",
 		DiscretionaryData: "123123",
 	}
 
-	formatted, err := t2.FormatISO()
+	formatted, err := t2.Format()
 	if err != nil {
 		panic(err)
 	}
 
-	encT2, err := dukpt.EncryptTrack2(formatted, testBDK, testKSN)
+	encoded, err := t2.Encode()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Track2    :", strings.ToUpper(hex.EncodeToString(formatted)))
-	fmt.Println("Track2 ENC:", strings.ToUpper(hex.EncodeToString(encT2)))
+	encT2, err := dukpt.EncryptTrack2(encoded, testBDK, testKSN)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Track2 (formatted):", formatted)
+	fmt.Println("Track2 (TLV):      ", strings.ToUpper(hex.EncodeToString(encoded)))
+	fmt.Println("Track2 (encrypted):", strings.ToUpper(hex.EncodeToString(encT2)))
 }
 
 func mustDecodeHex(s string) []byte {

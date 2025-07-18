@@ -2,70 +2,76 @@ package track2
 
 import (
 	"fmt"
-
-	"github.com/pauloavelar/go-dukpt-playground/bcd"
+	"strings"
 )
 
 const (
-	startSentinel = ';'
-	separator     = '='
-	separatorAlt  = 'D'
-	endSentinel   = '?'
-
-	baseLen = 5 // start sentinel + YY + MM + separator + end sentinel
+	padding   = 'F'
+	separator = '='
 )
 
+// Data represents the fields required to generate EMV Track 2 Equivalent Data (tag 57).
+//
+// Reference: EMV Book 3, Annex B1; ISO/IEC 7812-1:2017(E)
+//
+// Fields:
+//   - PAN: Primary Account Number (10 to 19 digits)
+//   - ExpYear: Expiry year (2 digits, YY)
+//   - ExpMonth: Expiry month (2 digits, MM)
+//   - ServiceCode: 3-digit service code
+//   - DiscretionaryData: Up to 13 digits
+//
+// All fields must be valid and numeric as per EMV/Track 2 specifications.
 type Data struct {
-	PAN               string // Primary Account Number
-	ExpYear           uint16 // Expiry year (supports YY and YYYY formats)
-	ExpMonth          uint8  // Expiry month (MM)
-	ServiceCode       string
-	DiscretionaryData string
+	PAN               string `minLength:"10" maxLength:"19"` // Primary Account Number (10 to 19 digits, numeric only)
+	ExpYear           string `exactLength:"2"`               // Expiry year (YY)
+	ExpMonth          string `minLength:"1" maxLength:"2"`   // Expiry month (MM)
+	ServiceCode       string `exactLength:"3"`               // 3-digit, numeric only
+	DiscretionaryData string `maxLength:"13"`                // Up to 13 digits, numeric only
 }
 
-// FormatISO formats Data using '=' as the separator (ISO/IEC 7813)
-func (d *Data) FormatISO() ([]byte, error) {
-	return d.formatTrack2(separator)
-}
-
-// FormatAlt formats Data using 'D' as the separator (alternative)
-func (d *Data) FormatAlt() ([]byte, error) {
-	return d.formatTrack2(separatorAlt)
-}
-
-func (d *Data) formatTrack2(sep rune) ([]byte, error) {
-	// Validate PAN is not empty
-	if len(d.PAN) == 0 {
-		return nil, fmt.Errorf("invalid PAN: %s", d.PAN)
+// Format returns the human-readable Track 2 Equivalent Data for EMV (tag 57)
+func (d *Data) Format() (string, error) {
+	err := d.Validate()
+	if err != nil {
+		return "", fmt.Errorf("invalid data - %w", err)
 	}
 
-	pan, err := bcd.NumericToRightPaddedBCD(d.PAN)
+	var b strings.Builder
+	b.WriteString(d.PAN)
+	b.WriteRune(separator)
+	b.WriteString(d.ExpYear)
+	b.WriteString(fmt.Sprintf("%02s", d.ExpMonth))
+	b.WriteString(d.ServiceCode)
+	b.WriteString(d.DiscretionaryData)
+
+	if b.Len()%2 != 0 {
+		b.WriteRune(padding)
+	}
+
+	return b.String(), nil
+}
+
+// Encode returns a valid TLV-encoded Track 2 Equivalent Data.
+func (d *Data) Encode() ([]byte, error) {
+	formatted, err := d.Format()
 	if err != nil {
 		return nil, err
 	}
 
-	etc, err := bcd.NumericToRightPaddedBCD(d.ServiceCode + d.DiscretionaryData)
-	if err != nil {
-		return nil, err
+	encoded := make([]byte, len(formatted)/2)
+	for i := 0; i < len(formatted); i += 2 {
+		h := charToNibble(formatted[i])
+		l := charToNibble(formatted[i+1])
+
+		encoded[i/2] = h<<4 | l
 	}
 
-	expYear, err := sanitizeExpYear(d.ExpYear)
-	if err != nil {
-		return nil, err
-	}
-
-	t2 := make([]byte, 0, d.byteLen())
-	t2 = append(t2, startSentinel)
-	t2 = append(t2, pan...)
-	t2 = append(t2, byte(sep))
-	t2 = append(t2, bcd.IntegerToBCD(expYear)...)
-	t2 = append(t2, bcd.IntegerToBCD(d.ExpMonth)...)
-	t2 = append(t2, etc...)
-	t2 = append(t2, endSentinel)
-
-	return t2, nil
+	return encoded, nil
 }
 
-func (d *Data) byteLen() int {
-	return baseLen + bcd.ByteLen(d.PAN) + bcd.ByteLen(d.ServiceCode+d.DiscretionaryData)
+// Validate checks if all fields are numeric and have valid lengths.
+// Returns an error describing the first problem found, if any.
+func (d *Data) Validate() error {
+	return validateNumericFields(d)
 }
